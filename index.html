@@ -21,10 +21,15 @@
                     <i class="fa-solid fa-user-plus"></i>
                 </div>
                 <h1>REGISTRO<br><span>JUGADOR</span></h1>
-                <p>Unete a la liga con tu código.</p>
+                <p>Crea tu cuenta para unirte a la liga.</p>
             </div>
 
             <form id="registroForm">
+                <div class="input-container">
+                    <i class="fa-solid fa-user icon"></i>
+                    <input type="text" id="username" placeholder="Nombre de Usuario" required autocomplete="off">
+                </div>
+
                 <div class="input-container">
                     <i class="fa-solid fa-envelope icon"></i>
                     <input type="email" id="email" placeholder="Correo electrónico" required autocomplete="off">
@@ -33,11 +38,6 @@
                 <div class="input-container">
                     <i class="fa-solid fa-lock icon"></i>
                     <input type="password" id="password" placeholder="Contraseña" required>
-                </div>
-
-                <div class="input-container code-container">
-                    <i class="fa-solid fa-ticket icon"></i>
-                    <input type="text" id="codigoInvitacion" placeholder="CÓDIGO DE ACCESO" required autocomplete="off">
                 </div>
 
                 <button type="submit" class="btn-login">
@@ -59,6 +59,5 @@
     </div>
 
     <script type="module" src="js/auth.js"></script>
-    <script type="module" src="./js/migracion.js"></script>
-</body>
+    </body>
 </html>

@@ -1,45 +1,31 @@
 import { auth, db } from "./firebase-config.js";
 import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, query, where, getDocs, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const registroForm = document.getElementById('registroForm');
 const mensajeError = document.getElementById('mensajeError');
 
 registroForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    mensajeError.innerText = "Verificando código...";
+    mensajeError.innerText = "Creando cuenta...";
 
-    const email = document.getElementById('email').value;
+    const username = document.getElementById('username').value.trim();
+    const email = document.getElementById('email').value.trim();
     const pass = document.getElementById('password').value;
-    const codigoInput = document.getElementById('codigoInvitacion').value;
+
+    if (username.length < 3) {
+        mensajeError.innerText = "El nombre de usuario debe tener al menos 3 caracteres.";
+        return;
+    }
 
     try {
-        // 1. Verificar código en BD
-        const q = query(collection(db, "codigos"), where("codigo", "==", codigoInput));
-        const querySnapshot = await getDocs(q);
-
-        let codigoValido = false;
-        let codigoId = "";
-        let nombreOficial = "";
-
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            if (data.usado === false) {
-                codigoValido = true;
-                codigoId = doc.id;
-                nombreOficial = data.nombre_asignado;
-            }
-        });
-
-        if (!codigoValido) throw new Error("Código no válido o ya usado.");
-
-        // 2. Crear usuario
+        // 1. Crear usuario en Firebase Auth
         const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
         const user = userCredential.user;
 
-        // 3. Guardar datos en Firestore
+        // 2. Guardar datos en Firestore
         await setDoc(doc(db, "usuarios", user.uid), {
-            nombre_usuario: nombreOficial,
+            nombre_usuario: username, // Usamos el nombre elegido
             email: email,
             presupuesto: 100,
             puntos_total: 0,
@@ -48,18 +34,21 @@ registroForm.addEventListener('submit', async (e) => {
             rol: "user"
         });
 
-        // 4. Quemar código
-        await updateDoc(doc(db, "codigos", codigoId), { usado: true });
-
-        alert(`¡Cuenta creada! Bienvenido, ${nombreOficial}.`);
+        alert(`¡Cuenta creada! Bienvenido, ${username}.`);
+        
+        // Guardar UID localmente para consistencia con login
+        localStorage.setItem('fantasy_user', user.uid);
+        
         window.location.href = "docs/home.html";
 
     } catch (error) {
         console.error(error);
         if (error.code === 'auth/email-already-in-use') {
             mensajeError.innerText = "Este correo ya existe. Ve a Iniciar Sesión.";
+        } else if (error.code === 'auth/weak-password') {
+            mensajeError.innerText = "La contraseña debe tener al menos 6 caracteres.";
         } else {
-            mensajeError.innerText = error.message;
+            mensajeError.innerText = "Error: " + error.message;
         }
     }
 });

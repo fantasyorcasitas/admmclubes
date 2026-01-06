@@ -1,18 +1,6 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBZTceWkrcCxPyuFmlC9myC9mmiDb92WLo",
-  authDomain: "extra-ricki.firebaseapp.com",
-  projectId: "extra-ricki",
-  storageBucket: "extra-ricki.firebasestorage.app",
-  messagingSenderId: "989567931458",
-  appId: "1:989567931458:web:796308cff8b89214a349db",
-  measurementId: "G-RE1Q34F3KS"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// IMPORTAMOS LA CONFIGURACIÓN CENTRALIZADA
+import { db } from "./firebase-config.js";
+import { doc, getDoc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- ESTADO ---
 let currentUserData = null;
@@ -23,56 +11,51 @@ let totalPatrimony = 0;
 let currentSlotIndex = -1;
 let isMarketClosed = false;
 
-// --- 1. COMPROBAR MERCADO (LÓGICA CORREGIDA) ---
+// --- 1. COMPROBAR MERCADO ---
 function checkMarketStatus() {
     const now = new Date();
-    const day = now.getDay(); // 0=Domingo, 1=Lunes, 2=Martes... 6=Sábado
+    const day = now.getDay(); // 0=Domingo, 1=Lunes ... 6=Sábado
     const hour = now.getHours();
 
-    // BLOQUEO:
-    // Sábado (6), Domingo (0), Lunes (1) -> CERRADO TODO EL DÍA
-    // Martes (2) -> CERRADO ANTES DE LAS 10:00 (hour < 10)
-    
+    // REGLA: Cerrado Sábados, Domingos y Lunes completos. Martes hasta las 10:00.
+    // (Ajusta esto según tus necesidades reales)
     if (day === 6 || day === 0 || day === 1 || (day === 2 && hour < 8)) {
         isMarketClosed = true;
         
-        // Bloqueo Visual (Overlay)
-        const overlay = document.getElementById('marketClosedMsg');
-        if(overlay) overlay.style.display = 'flex';
-
-        // Bloqueo Botón Guardar
+        // Deshabilitar botón visualmente
         const btn = document.getElementById('btnSaveTeam');
         if(btn) {
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-lock"></i> CERRADO';
+            btn.innerHTML = '<i class="fa-solid fa-lock"></i> MERCADO CERRADO';
             btn.style.backgroundColor = "#333";
+            btn.style.opacity = "1"; // Quitamos la transparencia de disabled para que se lea bien
+            btn.style.cursor = "not-allowed";
         }
-        return false; // Mercado Cerrado
+        return false;
     }
 
-    // SI NO ES NINGUNO DE ESOS DÍAS/HORAS -> ABIERTO
+    // Mercado Abierto
     isMarketClosed = false;
-    const overlay = document.getElementById('marketClosedMsg');
-    if(overlay) overlay.style.display = 'none';
-    
-    return true; // Mercado Abierto
+    return true;
 }
 
 // --- 2. INIT ---
 async function init() {
-    // 1. Verificar si está cerrado
     checkMarketStatus();
 
     const userNick = localStorage.getItem('fantasy_user');
     if (!userNick) { window.location.href = '../index.html'; return; }
 
     try {
-        // 2. Cargar Usuario
+        // Cargar Usuario
         const userDoc = await getDoc(doc(db, "usuarios", userNick));
-        if (!userDoc.exists()) return;
+        if (!userDoc.exists()) {
+            console.error("Usuario no encontrado");
+            return;
+        }
         currentUserData = userDoc.data();
 
-        // 3. Cargar Atletas
+        // Cargar Atletas
         const athSnap = await getDocs(collection(db, "atletas"));
         allAthletes = [];
         athSnap.forEach(d => {
@@ -82,7 +65,7 @@ async function init() {
             allAthletes.push(a);
         });
 
-        // 4. Reconstruir equipo
+        // Reconstruir equipo guardado
         const savedIds = currentUserData.equipo || [];
         captainId = currentUserData.capitanId || null;
 
@@ -93,45 +76,60 @@ async function init() {
             }
         });
 
-        // Calcular Patrimonio
-        const teamValue = teamSlots.reduce((sum, p) => sum + (p ? p.precio : 0), 0);
-        totalPatrimony = (parseInt(currentUserData.presupuesto) || 0) + teamValue;
+        // Calcular Patrimonio Total (Presupuesto actual + Valor de los jugadores que tienes)
+        // Esto es importante: tu "dinero total real" es lo que tienes en caja + lo que valen tus jugadores
+        const currentTeamValue = teamSlots.reduce((sum, p) => sum + (p ? p.precio : 0), 0);
+        totalPatrimony = (parseInt(currentUserData.presupuesto) || 0) + currentTeamValue;
 
         updateUI();
 
     } catch (error) {
-        console.error(error);
+        console.error("Error iniciando Mi Equipo:", error);
+        alert("Error de conexión. Intenta recargar.");
     }
 }
 
-// --- 3. ACTUALIZAR UI ---
+// --- 3. ACTUALIZAR INTERFAZ ---
 function updateUI() {
+    // Calcular coste del equipo actual en pantalla
     const currentTeamCost = teamSlots.reduce((sum, p) => sum + (p ? p.precio : 0), 0);
     const currentBudget = totalPatrimony - currentTeamCost;
 
+    // Actualizar Presupuesto
     const budgetEl = document.getElementById('budgetValue');
-    budgetEl.innerText = Math.round(currentBudget) + "M"; 
+    const debtWarning = document.getElementById('debtWarning');
     
-    if (currentBudget < 0) {
-        budgetEl.classList.remove('positive');
-        budgetEl.classList.add('negative');
-        document.getElementById('debtWarning').style.display = 'block';
-        if(!isMarketClosed) {
-            document.getElementById('btnSaveTeam').disabled = true;
-            document.getElementById('btnSaveTeam').innerText = "DEUDA EXCESIVA";
-        }
-    } else {
-        budgetEl.classList.remove('negative');
-        budgetEl.classList.add('positive');
-        document.getElementById('debtWarning').style.display = 'none';
+    if(budgetEl) {
+        budgetEl.innerText = Math.round(currentBudget) + "M"; 
         
-        if(!isMarketClosed) {
-            document.getElementById('btnSaveTeam').disabled = false;
-            document.getElementById('btnSaveTeam').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> GUARDAR CAMBIOS';
-            document.getElementById('btnSaveTeam').style.backgroundColor = "#ff5e00";
+        if (currentBudget < 0) {
+            budgetEl.classList.remove('positive');
+            budgetEl.classList.add('negative');
+            if(debtWarning) debtWarning.style.display = 'block'; // Mostrar pastilla roja
+
+            if(!isMarketClosed) {
+                const btn = document.getElementById('btnSaveTeam');
+                btn.disabled = true;
+                btn.innerHTML = '⚠️ PRESUPUESTO NEGATIVO';
+                btn.style.background = "#e84118";
+            }
+        } else {
+            budgetEl.classList.remove('negative');
+            budgetEl.classList.add('positive');
+            if(debtWarning) debtWarning.style.display = 'none';
+
+            if(!isMarketClosed) {
+                const btn = document.getElementById('btnSaveTeam');
+                btn.disabled = false;
+                btn.style.opacity = "1";
+                btn.style.cursor = "pointer";
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> GUARDAR ALINEACIÓN';
+                btn.style.backgroundColor = "#ff5e00";
+            }
         }
     }
 
+    // Renderizar los 3 huecos
     renderSlot(0, 'slot0');
     renderSlot(1, 'slot1');
     renderSlot(2, 'slot2');
@@ -139,18 +137,23 @@ function updateUI() {
 
 function renderSlot(index, elementId) {
     const container = document.getElementById(elementId);
+    if(!container) return;
+
     const player = teamSlots[index];
     container.innerHTML = "";
-
-    // Clase visual para deshabilitado
-    const disabledClass = isMarketClosed ? "disabled-slot" : "";
+    
+    // Limpiamos clases previas y dejamos la base
+    container.className = "player-card-slot"; 
 
     if (player) {
-        container.className = `player-card-slot filled ${disabledClass}`;
+        container.classList.add('filled');
+        
+        // Datos del jugador
+        const imgUrl = player.foto || 'https://cdn-icons-png.flaticon.com/512/74/74472.png';
         const isCapi = (player.id === captainId);
         const capiClass = isCapi ? "active" : "";
-        const imgUrl = player.foto || 'https://cdn-icons-png.flaticon.com/512/74/74472.png';
 
+        // Si el mercado está cerrado, NO mostramos botones de borrar/capitán
         const actionsHTML = isMarketClosed ? '' : `
             <div class="card-actions">
                 <button class="btn-mini btn-captain ${capiClass}" data-cap-idx="${index}">C</button>
@@ -165,7 +168,7 @@ function renderSlot(index, elementId) {
             ${actionsHTML}
         `;
 
-        // Asignamos eventos manualmente para asegurar que funcionan
+        // Eventos de botones (Capitán y Borrar)
         if (!isMarketClosed) {
             const btnCap = container.querySelector(`[data-cap-idx="${index}"]`);
             const btnRem = container.querySelector(`[data-rem-idx="${index}"]`);
@@ -174,27 +177,31 @@ function renderSlot(index, elementId) {
             if(btnRem) btnRem.onclick = (e) => { e.stopPropagation(); clearSlot(index); };
         }
         
-        container.onclick = null; // Si está lleno, el contenedor no hace nada (solo los botones)
+        // Al hacer click en la carta llena no pasa nada (o podrías abrir info del jugador)
+        container.onclick = null; 
 
     } else {
-        container.className = `player-card-slot ${disabledClass}`;
+        // HUECO VACÍO
         container.innerHTML = `
-            <i class="fa-solid fa-plus" style="font-size: 1.5rem; color: #666;"></i>
-            <span style="font-size: 0.7rem; color: #666; margin-top:5px; font-weight:600;">FICHAR</span>
+            <i class="fa-solid fa-plus" style="font-size: 1.5rem; color: #555;"></i>
+            <span style="font-size: 0.6rem; color: #666; margin-top:5px; font-weight:bold; text-transform:uppercase;">Fichar</span>
         `;
         
-        // SOLO si está abierto permitimos abrir el modal
+        // Si mercado abierto -> Click abre modal
         if(!isMarketClosed) {
             container.onclick = () => openModal(index);
         } else {
             container.onclick = null;
+            container.style.opacity = "0.5"; // Visualmente desactivado
         }
     }
 }
 
 // --- 4. FUNCIONES LÓGICAS ---
+
 function toggleCaptain(pid) {
     if(isMarketClosed) return;
+    // Si ya era capitán, se quita. Si no, se pone.
     captainId = (captainId === pid) ? null : pid;
     updateUI();
 }
@@ -202,38 +209,56 @@ function toggleCaptain(pid) {
 function clearSlot(index) {
     if(isMarketClosed) return;
     const p = teamSlots[index];
+    // Si borramos al capitán, reseteamos capitán
     if (p && p.id === captainId) captainId = null;
     teamSlots[index] = null;
     updateUI();
 }
 
-// --- 5. MODAL (DEFINICIÓN LOCAL SEGURA) ---
-function openModal(index) {
-    if (isMarketClosed) return; // Seguridad extra
+// --- 5. MODAL DE FICHAJES ---
+
+// Hacemos la función accesible globalmente (para que el HTML la encuentre si es necesario)
+window.openModal = function(index) {
+    if (isMarketClosed) return;
     currentSlotIndex = index;
     renderMarketList();
-    document.getElementById('playerModal').style.display = 'flex';
+    document.getElementById('playerModal').style.display = 'flex'; // Usamos flex para centrar
 }
 
-// Evento para cerrar modal (usando el botón del HTML)
+// Función global para cerrar
 window.closeModal = function() {
     document.getElementById('playerModal').style.display = 'none';
 }
 
-document.getElementById('modalSearch').addEventListener('keyup', renderMarketList);
+// Evento de búsqueda en tiempo real
+const searchInput = document.getElementById('modalSearch');
+if(searchInput) {
+    searchInput.addEventListener('keyup', renderMarketList);
+}
 
 function renderMarketList() {
     const container = document.getElementById('modalPlayerList');
-    const search = document.getElementById('modalSearch').value.toLowerCase();
+    if(!container) return;
+    
+    const searchVal = document.getElementById('modalSearch').value.toLowerCase();
     container.innerHTML = "";
 
+    // IDs que ya tienes en tu equipo para no mostrarlos
     const usedIds = teamSlots.filter(p => p).map(p => p.id);
+    
+    // Filtramos atletas disponibles
     const available = allAthletes.filter(a => {
-        const matchName = a.nombre.toLowerCase().includes(search);
+        const matchName = (a.nombre + ' ' + (a.apellidos || '')).toLowerCase().includes(searchVal);
         return !usedIds.includes(a.id) && matchName;
     });
 
+    // Ordenar por precio (más caros primero)
     available.sort((a,b) => b.precio - a.precio);
+
+    if(available.length === 0) {
+        container.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">No se encontraron atletas.</div>';
+        return;
+    }
 
     available.forEach(p => {
         const div = document.createElement('div');
@@ -241,12 +266,11 @@ function renderMarketList() {
         div.innerHTML = `
             <img src="${p.foto || 'https://cdn-icons-png.flaticon.com/512/74/74472.png'}">
             <div style="flex-grow:1;">
-                <div style="color:white; font-weight:bold;">${p.nombre}</div>
-                <div style="color:#ff5e00; font-size:0.8rem;">${p.precio}M | ${p.categoria || 'JUG'}</div>
+                <div style="color:white; font-weight:bold; font-size:0.9rem;">${p.nombre} ${p.apellidos || ''}</div>
+                <div style="color:#4cd137; font-size:0.8rem; font-weight:600;">${p.precio}M <span style="color:#666; margin-left:5px;">| ${p.categoria || 'JUG'}</span></div>
             </div>
-            <i class="fa-solid fa-plus-circle" style="color:#4cd137; font-size:1.2rem;"></i>
+            <i class="fa-solid fa-plus-circle" style="color:#ff5e00; font-size:1.5rem;"></i>
         `;
-        // Usamos una función flecha para pasar el objeto 'p'
         div.onclick = () => selectPlayer(p);
         container.appendChild(div);
     });
@@ -255,22 +279,33 @@ function renderMarketList() {
 function selectPlayer(player) {
     teamSlots[currentSlotIndex] = player;
     document.getElementById('playerModal').style.display = 'none';
+    
+    // Limpiar buscador para la próxima
+    document.getElementById('modalSearch').value = "";
+    
     updateUI();
 }
 
-// --- 6. GUARDAR ---
+// --- 6. GUARDAR EN FIREBASE ---
 const btnSave = document.getElementById('btnSaveTeam');
 if(btnSave) {
     btnSave.addEventListener('click', async () => {
         if(isMarketClosed) return; 
 
+        // Bloquear botón visualmente
+        const originalText = btnSave.innerHTML;
         btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GUARDANDO...';
         btnSave.disabled = true;
+        btnSave.style.background = "#333";
 
         try {
             const userNick = localStorage.getItem('fantasy_user');
-            const cost = teamSlots.reduce((sum, p) => sum + (p ? p.precio : 0), 0);
-            const finalBudget = totalPatrimony - cost;
+            
+            // Calculamos presupuesto final a guardar
+            const currentCost = teamSlots.reduce((sum, p) => sum + (p ? p.precio : 0), 0);
+            const finalBudget = totalPatrimony - currentCost;
+            
+            // Extraemos solo los IDs para guardar en la BD
             const teamIds = teamSlots.filter(p => p).map(p => p.id);
 
             await updateDoc(doc(db, "usuarios", userNick), {
@@ -279,20 +314,29 @@ if(btnSave) {
                 presupuesto: Math.round(finalBudget)
             });
 
-            btnSave.style.background = "#4cd137";
+            // Feedback visual de éxito
+            btnSave.style.background = "#4cd137"; // Verde
             btnSave.innerHTML = '<i class="fa-solid fa-check"></i> GUARDADO';
             
             setTimeout(() => {
+                // Restaurar estado normal después de 2 segundos
                 btnSave.style.background = "#ff5e00";
-                btnSave.innerHTML = 'GUARDAR CAMBIOS';
+                btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> GUARDAR ALINEACIÓN';
                 btnSave.disabled = false;
             }, 2000);
 
         } catch (e) {
             console.error(e);
             btnSave.innerText = "ERROR AL GUARDAR";
+            btnSave.style.background = "#e84118"; // Rojo
+            setTimeout(() => {
+                 btnSave.disabled = false; 
+                 btnSave.style.background = "#ff5e00";
+                 btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> GUARDAR ALINEACIÓN';
+            }, 3000);
         }
     });
 }
 
+// INICIAR TODO AL CARGAR LA PÁGINA
 document.addEventListener('DOMContentLoaded', init);

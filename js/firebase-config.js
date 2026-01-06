@@ -5,12 +5,13 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase
 
 // 2. Tu configuración (Copiada de lo que me has pasado)
 const firebaseConfig = {
-  apiKey: "AIzaSyBmwfxAGq6dzy6RegYcWQHd4XgDgn1QJiM",
-  authDomain: "fantasy-atletismo-26.firebaseapp.com",
-  projectId: "fantasy-atletismo-26",
-  storageBucket: "fantasy-atletismo-26.firebasestorage.app",
-  messagingSenderId: "133833651406",
-  appId: "1:133833651406:web:4e2841f58fd2a288c30c9f"
+  apiKey: "AIzaSyBZTceWkrcCxPyuFmlC9myC9mmiDb92WLo",
+  authDomain: "extra-ricki.firebaseapp.com",
+  projectId: "extra-ricki",
+  storageBucket: "extra-ricki.firebasestorage.app",
+  messagingSenderId: "989567931458",
+  appId: "1:989567931458:web:796308cff8b89214a349db",
+  measurementId: "G-RE1Q34F3KS"
 };
 
 // 3. Inicializamos la App, la Autenticación y la Base de Datos

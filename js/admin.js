@@ -122,55 +122,85 @@ formAtleta.addEventListener('submit', async (e) => {
 
 
 // === 3. LÓGICA DE LA COMPETICIÓN (Añadir a lista temporal) ===
-const btnAddLineup = document.getElementById('btnAddLineup');
-const listaVisual = document.getElementById('listaVisual');
+// === BOTÓN AÑADIR A LA LISTA ===
+document.getElementById('btnAddLineup').addEventListener('click', () => {
+    const selector = document.getElementById('selectorAtletasLineup'); // Ojo: asegúrate que el ID coincida con tu HTML (en tu primer bloque era este, en el segundo pusiste selectorAtletasBD)
+    const prueba = document.getElementById('inputPruebaEspecifica').value;
+    const marcaPB = document.getElementById('inputMarcaPersonal').value;     // NUEVO
+    const posEsp = document.getElementById('inputPosicionEsperada').value;   // NUEVO
 
-btnAddLineup.addEventListener('click', () => {
-    const selector = document.getElementById('selectorAtletasBD');
-    const inputPrueba = document.getElementById('inputPruebaEspecifica');
-    
-    const idAtleta = selector.value;
-    const nombreAtleta = selector.options[selector.selectedIndex]?.getAttribute('data-nombre-completo');
-    const prueba = inputPrueba.value;
+    if (!selector.value || !prueba) return alert("Faltan datos obligatorios (Atleta y Prueba)");
 
-    if (!idAtleta || !prueba) {
-        alert("⚠️ Selecciona un atleta y escribe la prueba (ej: 100m)");
-        return;
-    }
-
-    // Añadimos al array global
+    // Añadimos al array con los nuevos campos
     listaParticipantes.push({
-        id_atleta: idAtleta,
-        nombre_completo: nombreAtleta, // Guardamos el nombre para no tener que buscarlo luego
+        id_atleta: selector.value,
+        nombre_completo: selector.options[selector.selectedIndex].text.trim(),
         prueba: prueba,
-        resultado: null // Se rellenará cuando acabe la compe
+        marca_personal: marcaPB || "-", // Si está vacío ponemos un guion
+        posicion_esperada: posEsp || "-",
+        resultado: "", 
+        puntos: 0
     });
 
-    // Dibujamos en la cajita negra para que veas quién está
-    actualizarListaVisual();
-    
-    // Limpiamos el input de prueba
-    inputPrueba.value = "";
+    // Limpiamos los inputs para meter al siguiente rápido
+    document.getElementById('inputPruebaEspecifica').value = "";
+    document.getElementById('inputMarcaPersonal').value = "";
+    document.getElementById('inputPosicionEsperada').value = "";
+
+    actualizarVisualCompe();
 });
 
-function actualizarListaVisual() {
+// === FUNCIÓN PARA PINTAR LA LISTA VISUALMENTE ===
+function actualizarVisualCompe() {
+    const container = document.getElementById('listaVisual');
+    
     if (listaParticipantes.length === 0) {
-        listaVisual.innerHTML = '<p style="color: #666; text-align: center;">Ningún atleta añadido aún</p>';
+        container.innerHTML = '<p style="color:#666;text-align:center;">Lista vacía.</p>';
         return;
     }
+
+    container.innerHTML = ""; 
     
-    listaVisual.innerHTML = ""; // Limpiar
     listaParticipantes.forEach((item, index) => {
         const div = document.createElement('div');
         div.className = 'lineup-item';
+        div.dataset.id = item.id_atleta; 
+        div.style.cssText = "display:flex; align-items:center; gap:10px; border-bottom:1px solid #333; padding:10px; margin-bottom:5px; background: #1a1a1a;";
+        
+        // Aquí mostramos la info extra en pequeñito
         div.innerHTML = `
-            ${item.nombre_completo} <span>${item.prueba}</span>
-            <span style="color: red; cursor: pointer; font-weight: bold;" onclick="eliminarDeLista(${index})">X</span>
-        `;
-        listaVisual.appendChild(div);
-    });
-}
+            <div style="flex-grow:1;">
+                <div style="font-weight:bold; color:white;">${item.nombre_completo}</div>
+                <div style="font-size:0.8rem; color:#aaa; margin-top:2px;">
+                    <span style="color:var(--primary)">${item.prueba}</span> | 
+                    <i class="fa-solid fa-stopwatch"></i> PB: ${item.marca_personal} | 
+                    <i class="fa-solid fa-chart-line"></i> Est: ${item.posicion_esperada}º
+                </div>
+            </div>
 
+            <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                <span style="font-size:0.7rem; color:#666;">MARCA</span>
+                <input type="text" class="result-text" value="${item.resultado || ''}" 
+                    oninput="window.listaParticipantes[${index}].resultado = this.value" 
+                    style="width:80px !important;">
+            </div>
+
+            <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                <span style="font-size:0.7rem; color:#666;">PTS</span>
+                <input type="number" class="result-points" value="${item.puntos || 0}" 
+                    oninput="window.listaParticipantes[${index}].puntos = Number(this.value)"
+                    style="width:50px !important;">
+            </div>
+
+            <i class="fa-solid fa-trash" style="color:#d63031; cursor:pointer; margin-left:10px; font-size:1.1rem;" 
+               onclick="delLineup(${index})" title="Eliminar atleta"></i>
+        `;
+        container.appendChild(div);
+    });
+    
+    // Actualizamos la variable global para que esté sincronizada
+    window.listaParticipantes = listaParticipantes;
+}
 // Función para borrar alguien si te equivocas (necesita estar en window para llamarse desde el HTML string)
 window.eliminarDeLista = (index) => {
     listaParticipantes.splice(index, 1);
@@ -244,38 +274,87 @@ window.eliminarDeLista = (index) => {
         }
 
 // === 4. GUARDAR COMPETICIÓN FINAL ===
-const formCompe = document.getElementById('formCompe');
-
-formCompe.addEventListener('submit', async (e) => {
+// === GUARDAR COMPETICIÓN Y ACTUALIZAR PERFILES DE ATLETAS ===
+document.getElementById('formCompe').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const id = document.getElementById('compeIdHidden').value;
 
+    // Validación básica
     if (listaParticipantes.length === 0) {
         if(!confirm("⚠️ ¿Seguro que quieres crear una competición sin atletas?")) return;
     }
 
-    const btn = formCompe.querySelector('button[type="submit"]');
-    btn.innerText = "Creando Competición...";
+    const btn = document.getElementById('btnSubmitCompe');
+    btn.innerText = "Guardando...";
     btn.disabled = true;
 
     try {
-        await addDoc(collection(db, "competiciones"), {
-            nombre: document.getElementById('compNombre').value,
-            lugar: document.getElementById('compLugar').value,
-            fecha: document.getElementById('compFecha').value,
-            pruebas_resumen: document.getElementById('compPruebasTexto').value,
-            participantes: listaParticipantes, // AQUÍ VA EL ARRAY CON TUS DATOS
-            estado: "pendiente" // pendiente -> finalizada (cuando pongas resultados)
+        // 1. Recoger datos de los inputs visuales (por si editaste resultados a mano)
+        const itemsDOM = document.querySelectorAll('.lineup-item');
+        const listaActualizada = [];
+        
+        itemsDOM.forEach((div, index) => {
+            const inputs = div.querySelectorAll('input');
+            // Buscamos el objeto original en el array
+            const original = listaParticipantes[index]; 
+            
+            listaActualizada.push({ 
+                ...original, 
+                resultado: inputs[0].value, 
+                puntos: Number(inputs[1].value) 
+            });
         });
 
-        alert("🏆 Competición creada exitosamente");
-        formCompe.reset();
-        listaParticipantes = []; // Vaciamos array
-        actualizarListaVisual();
+        // 2. Preparar objeto de la competición
+        const datosCompe = {
+            nombre: document.getElementById('compNombre').value,
+            fecha: document.getElementById('compFecha').value,
+            lugar: document.getElementById('compLugar').value,
+            estado: document.getElementById('compEstado').value,
+            links: document.getElementById('compLinks').value,
+            pruebas_resumen: document.getElementById('compPruebas').value,
+            participantes: listaActualizada
+        };
+
+        // 3. GUARDAR LA COMPETICIÓN EN LA COLECCIÓN 'COMPETICIONES'
+        if(id) await updateDoc(doc(db, "competiciones", id), datosCompe);
+        else await addDoc(collection(db, "competiciones"), datosCompe);
+
+        // ============================================================
+        // 4. NUEVO: ACTUALIZAR LA FICHA DE CADA ATLETA (PARA EL MERCADO)
+        // ============================================================
+        // Esto recorre todos los atletas de la lista y actualiza su MMP y Posición en su perfil personal
+        
+        const promesasActualizacion = listaActualizada.map(p => {
+            // Solo actualizamos si hay datos válidos (para no borrar datos antiguos por error)
+            const actualizaciones = {};
+            
+            if(p.marca_personal && p.marca_personal !== "-") {
+                actualizaciones.marca_personal = p.marca_personal;
+            }
+            if(p.posicion_esperada && p.posicion_esperada !== "-") {
+                actualizaciones.posicion_esperada = p.posicion_esperada;
+            }
+
+            // Si hay algo que actualizar, lanzamos la petición a la colección 'atletas'
+            if(Object.keys(actualizaciones).length > 0) {
+                const atletaRef = doc(db, "atletas", p.id_atleta);
+                return updateDoc(atletaRef, actualizaciones);
+            }
+        });
+
+        // Esperamos a que se actualicen todos los atletas
+        await Promise.all(promesasActualizacion);
+
+        // ============================================================
+
+        alert("✅ Competición guardada y perfiles de atletas actualizados.");
+        window.location.reload();
 
     } catch (error) {
-        alert("Error: " + error.message);
-    } finally {
-        btn.innerText = "GUARDAR COMPETICIÓN";
+        console.error(error);
+        alert("Error guardando: " + error.message);
         btn.disabled = false;
+        btn.innerText = "GUARDAR DATOS";
     }
 });

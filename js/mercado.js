@@ -8,7 +8,7 @@ let todosLosAtletas = [];
 // === 1. CARGAR MERCADO Y ORDENAR ===
 async function cargarMercado() {
     try {
-        mercadoGrid.innerHTML = '<p style="color:white; text-align:center">Cargando...</p>';
+        mercadoGrid.innerHTML = '<p style="color:white; text-align:center; margin-top:20px;">Cargando mercado...</p>';
         const querySnapshot = await getDocs(collection(db, "atletas"));
         
         todosLosAtletas = [];
@@ -26,7 +26,7 @@ async function cargarMercado() {
     }
 }
 
-// === 2. RENDERIZAR TARJETAS ===
+// === 2. RENDERIZAR TARJETAS (MODIFICADO) ===
 function renderizarAtletas(listaAtletas) {
     if (listaAtletas.length === 0) {
         mercadoGrid.innerHTML = '<p style="text-align:center; color:gray">No hay resultados.</p>';
@@ -36,37 +36,19 @@ function renderizarAtletas(listaAtletas) {
     let htmlAcumulado = '';
 
     listaAtletas.forEach(atleta => {
-        // --- A. CÁLCULOS DE ESTADÍSTICAS ---
+        // --- A. CÁLCULOS DE ESTADÍSTICAS BÁSICAS ---
         const historial = atleta.historial_puntos || [];
         const totalPuntos = historial.reduce((a, b) => a + b, 0);
-        const ultimaJornada = historial.length > 0 ? historial[historial.length - 1] : 0;
         const media = historial.length > 0 ? (totalPuntos / historial.length).toFixed(1) : "0.0";
         
-        // PRECIO DIRECTO (Ej: "7M")
+        // PRECIO
         const precioVal = atleta.precio !== undefined ? atleta.precio : 0;
         const precioDisplay = precioVal + 'M';
 
-        // --- B. PREPARAR GRÁFICAS (OCULTAS) ---
-        const puntosVisuales = prepararUltimos5(historial, false);
-        const labelsPuntos = ['J-4', 'J-3', 'J-2', 'J-1', 'ÚLTIMA'];
-        let htmlGridPuntos = '';
-        puntosVisuales.forEach((val, i) => {
-            htmlGridPuntos += `
-                <div class="grid-item">
-                    <span class="grid-label">${labelsPuntos[i]}</span>
-                    <span class="grid-value">${val}</span>
-                </div>`;
-        });
-
-        const valorVisuales = prepararUltimos5(atleta.historial_valor || [precioVal], true);
-        let htmlGridValor = '';
-        valorVisuales.forEach((val, i) => {
-            htmlGridValor += `
-                <div class="grid-item">
-                    <span class="grid-label">Reg-${i+1}</span>
-                    <span class="grid-value">${val}</span>
-                </div>`;
-        });
+        // --- B. NUEVOS DATOS TÉCNICOS (MMP y POSICIÓN) ---
+        // Usamos "N/A" o "-" si el campo no existe en la base de datos todavía
+        const mmp = atleta.marca_personal || "-";
+        const posEsperada = atleta.posicion_esperada || "-";
 
         // --- C. CONSTRUIR HTML ---
         htmlAcumulado += `
@@ -82,33 +64,52 @@ function renderizarAtletas(listaAtletas) {
 
                 <div class="stats-summary">
                     <div class="stat-box">
-                        <span class="stat-label">TOTAL</span>
+                        <span class="stat-label">TOTAL PTS</span>
                         <span class="stat-num">${totalPuntos}</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-label">ÚLTIMA</span>
-                        <span class="stat-num">${ultimaJornada}</span>
                     </div>
                     <div class="stat-box">
                         <span class="stat-label">MEDIA</span>
                         <span class="stat-num">${media}</span>
                     </div>
+                    <div class="stat-box">
+                        <span class="stat-label">JORNADAS</span>
+                        <span class="stat-num">${historial.length}</span>
+                    </div>
                 </div>
 
                 <div class="toggle-btn" onclick="toggleHistorial('${atleta.id}')">
-                    Ver historial <i class="fa-solid fa-list-ul"></i>
+                    Ver datos técnicos <i class="fa-solid fa-stopwatch"></i>
                 </div>
 
                 <div id="historial-${atleta.id}" class="historial-desplegable" style="display: none;">
-                    <div class="stats-section">
-                        <label class="section-label">Puntos (Últimas 5)</label>
-                        <div class="history-grid">${htmlGridPuntos}</div>
+                    
+                    <div style="display: flex; gap: 10px; padding: 10px; background: #222; border-radius: 8px; text-align: center;">
+                        
+                        <div style="flex: 1; border-right: 1px solid #444;">
+                            <div style="color: #aaa; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 5px;">
+                                <i class="fa-solid fa-bolt"></i> Marca Personal
+                            </div>
+                            <div style="color: white; font-size: 1.2rem; font-weight: bold;">
+                                ${mmp}
+                            </div>
+                        </div>
+
+                        <div style="flex: 1;">
+                            <div style="color: #aaa; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 5px;">
+                                <i class="fa-solid fa-ranking-star"></i> Pos. Esperada
+                            </div>
+                            <div style="color: #ff5e00; font-size: 1.2rem; font-weight: bold;">
+                                ${posEsperada}º
+                            </div>
+                        </div>
+
                     </div>
-                    <div class="stats-section">
-                        <label class="section-label">Evolución Valor</label>
-                        <div class="history-grid">${htmlGridValor}</div>
-                    </div>
-                    </div>
+
+                    <p style="color: #666; font-size: 0.7rem; text-align: center; margin-top: 10px; font-style: italic;">
+                        * Datos basados en últimas competiciones oficiales.
+                    </p>
+
+                </div>
             </div>
         `;
     });
@@ -119,18 +120,18 @@ function renderizarAtletas(listaAtletas) {
 // === 3. FUNCIONES AUXILIARES ===
 window.toggleHistorial = (id) => {
     const el = document.getElementById(`historial-${id}`);
-    const btn = event.currentTarget; 
+    const btn = event.currentTarget; // El botón que se clickeó
     
     if (el.style.display === "none") {
         el.style.display = "block";
-        btn.innerHTML = 'Ocultar <i class="fa-solid fa-chevron-up"></i>';
+        // Animación simple de entrada
+        el.style.animation = "fadeIn 0.3s ease-out";
+        btn.innerHTML = 'Ocultar info <i class="fa-solid fa-chevron-up"></i>';
     } else {
         el.style.display = "none";
-        btn.innerHTML = 'Ver historial <i class="fa-solid fa-list-ul"></i>';
+        btn.innerHTML = 'Ver datos técnicos <i class="fa-solid fa-stopwatch"></i>';
     }
 };
-
-// La función window.ficharAtleta ya no es necesaria, pero no molesta si la dejas.
 
 inputBuscador.addEventListener('input', (e) => {
     const texto = e.target.value.toLowerCase();
@@ -139,19 +140,3 @@ inputBuscador.addEventListener('input', (e) => {
 });
 
 window.addEventListener('DOMContentLoaded', cargarMercado);
-
-function prepararUltimos5(arrayDatos, esMoneda = false) {
-    const datos = arrayDatos || [];
-    const ultimos = datos.slice(-5);
-    const resultado = Array(5).fill('-');
-    const offset = 5 - ultimos.length;
-    
-    ultimos.forEach((dato, index) => {
-        if (esMoneda) {
-            resultado[index + offset] = dato + 'M'; 
-        } else {
-            resultado[index + offset] = dato;
-        }
-    });
-    return resultado;
-}

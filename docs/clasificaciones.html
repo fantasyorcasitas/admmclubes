@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Clasificación | Fantasy Orcasitas</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* ESTILOS BASE */
+        * { box-sizing: border-box; } /* CRUCIAL PARA EVITAR EL DESPLAZAMIENTO */
+        
+        html { background-color: #000000 !important; }
+        body {
+            display: block !important; height: auto !important; min-height: 100vh; overflow-y: auto !important;
+            background-color: transparent !important; margin: 0; padding: 0;
+            font-family: 'Montserrat', sans-serif; position: relative; 
+        }
+
+        /* FONDO */
+        .bg-image {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    /* Foto de una pista de atletismo real */
+    background: url('https://images.unsplash.com/photo-1532444458054-01a7dd3e9fca?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover;
+    z-index: -2;
+    transform: scale(1.05); /* Zoom sutil */
+}
+
+.bg-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
+    z-index: -1;
+    backdrop-filter: blur(4px); /* Difumina la foto de fondo */
+}
+
+        /* DASHBOARD - AQUÍ ESTÁ EL ARREGLO DE ALINEACIÓN */
+        .dashboard-container {
+            padding-top: 40px !important;
+            padding-bottom: 80px !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            /* Añadimos padding lateral para asegurar márgenes en móvil */
+            padding-left: 15px;
+            padding-right: 15px; 
+            position: relative; z-index: 1;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            position: sticky; /* Se pega arriba al hacer scroll */
+            top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #000;
+            border-bottom: 2px solid #222;
+            padding: 15px 20px;
+            z-index: 1000;
+            height: 70px;
+            width: 100%;
+        }
+
+        .nav-logo a {
+            text-decoration: none;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-logo span { color: #ff5e00; } /* Naranja */
+
+        /* MENÚ DE ESCRITORIO */
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #aaa;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+        color: #ff5e00 !important; /* Naranja */
+        }
+
+        .btn-logout {
+            background: none;
+            border: none;
+            color: #ff5e00;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .menu-toggle {
+            display: none; /* Oculto en PC */
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* CLASIFICACIONES */
+        h1 {
+            color: white; text-transform: uppercase; margin-bottom: 20px; text-align: center;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5); font-size: 2.2rem; font-weight: 800;
+        }
+
+        .rankings-wrapper {
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 20px; 
+            width: 100%; 
+            max-width: 1200px;
+        }
+
+        .ranking-card {
+            flex: 1; 
+            min-width: 300px; 
+            /* En móvil usaremos width 100% para evitar desbordes */
+            width: 100%; 
+            background: rgba(20, 20, 20, 0.95); 
+            border-radius: 10px; 
+            padding: 20px; 
+            border: 1px solid #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .ranking-title {
+            color: #ff5e00; font-size: 1.2rem; margin-bottom: 15px; text-transform: uppercase;
+            font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 10px;
+        }
+
+        .ranking-table { width: 100%; border-collapse: collapse; color: white; }
+        .ranking-table th { padding: 10px; text-align: left; color: #888; font-size: 0.85rem; text-transform: uppercase; }
+        .ranking-table td { padding: 12px 10px; border-bottom: 1px solid #333; font-weight: 600; }
+        .rank-col { text-align: center; width: 40px; color: #666; }
+        .pts-col { text-align: right; width: 60px; color: #ff5e00; font-weight: 800; }
+
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        /* RESPONSIVE MÓVIL */
+        @media (max-width: 768px) {
+            .navbar { padding: 10px 15px !important; }
+            .menu-toggle { display: block !important; }
+
+            .nav-links {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+                background-color: rgba(0,0,0,0.98); flex-direction: column; justify-content: center; align-items: center;
+                z-index: 6000; transform: translateX(100%); transition: transform 0.3s ease-in-out;
+            }
+            .nav-links.active { transform: translateX(0); }
+            .nav-links a { font-size: 1.5rem; margin: 20px 0; color: white !important; display: block; }
+            .btn-logout { margin-top: 30px; font-size: 1.5rem; }
+
+            /* Ajustes finos para móvil */
+            .dashboard-container { padding-left: 15px; padding-right: 15px; }
+            .ranking-card { margin-bottom: 20px; }
+            h1 { font-size: 1.8rem; margin-top: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-image"></div>
+    <div class="bg-overlay"></div>
+
+    <nav class="navbar">
+        <div class="nav-logo">
+            <a href="home.html">
+                <i class="fa-solid fa-person-running"></i> FANTASY <span>ORCASITAS</span>
+            </a>
+        </div>
+
+        <button class="menu-toggle" onclick="toggleMenu()">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="nav-links" id="navLinks">
+            <button class="menu-toggle" onclick="toggleMenu()" style="position: absolute; top: 20px; right: 20px; font-size: 2rem;">
+                <i class="fa-solid fa-times"></i>
+            </button>
+
+             <a href="home.html">INICIO</a>
+            <a href="mi_equipo.html">MI EQUIPO</a>
+            <a href="mercado.html">MERCADO</a>
+            <a href="clasificaciones.html" class="active">RANKING</a>
+            <a href="calendario.html">CALENDARIO</a>
+
+            <button onclick="cerrarSesion()" class="btn-logout">
+                <i class="fa-solid fa-power-off"></i> Salir
+            </button>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        
+        <h1><i class="fa-solid fa-chart-line"></i> Clasificaciones</h1>
+
+        <div class="rankings-wrapper">
+            
+            <div class="ranking-card">
+                <div class="ranking-title">
+                    <i class="fa-solid fa-users"></i> Liga Managers
+                </div>
+                <div class="table-responsive">
+                    <table class="ranking-table">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #444;">
+                                <th class="rank-col">#</th>
+                                <th>Manager</th>
+                                <th class="pts-col">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="managersBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="ranking-card">
+                <div class="ranking-title">
+                    <i class="fa-solid fa-medal"></i> Ranking Atletas
+                </div>
+                <div class="table-responsive">
+                    <table class="ranking-table">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #444;">
+                                <th class="rank-col">#</th>
+                                <th>Atleta</th>
+                                <th class="pts-col">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="atletasBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() { document.getElementById('navLinks').classList.toggle('active'); }
+        function cerrarSesion() { localStorage.removeItem('fantasy_user'); window.location.href = '../index.html'; }
+    </script>
+
+    <script type="module" src="../js/clasificaciones.js"></script>
+</body>
+</html>

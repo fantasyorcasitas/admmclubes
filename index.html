@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Orcasitas | Registro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="bg-image"></div>
+    <div class="bg-overlay"></div>
+
+    <div class="login-wrapper">
+        <div class="login-card">
+            
+            <div class="card-header">
+                <div class="icon-circle">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <h1>REGISTRO<br><span>JUGADOR</span></h1>
+                <p>Unete a la liga con tu código.</p>
+            </div>
+
+            <form id="registroForm">
+                <div class="input-container">
+                    <i class="fa-solid fa-envelope icon"></i>
+                    <input type="email" id="email" placeholder="Correo electrónico" required autocomplete="off">
+                </div>
+
+                <div class="input-container">
+                    <i class="fa-solid fa-lock icon"></i>
+                    <input type="password" id="password" placeholder="Contraseña" required>
+                </div>
+
+                <div class="input-container code-container">
+                    <i class="fa-solid fa-ticket icon"></i>
+                    <input type="text" id="codigoInvitacion" placeholder="CÓDIGO DE ACCESO" required autocomplete="off">
+                </div>
+
+                <button type="submit" class="btn-login">
+                    CREAR CUENTA <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="footer-msg">
+                <p id="mensajeError"></p>
+            </div>
+
+            <div class="switch-mode" style="margin-top: 20px; color: #888; font-size: 0.9rem; position: relative; z-index: 1000;">
+                ¿Ya tienes cuenta? 
+                <a href="login.html" style="color: #ff5e00; font-weight: bold; text-decoration: underline;">Inicia Sesión</a>
+            </div>
+        </div>
+        
+        <div class="copyright">&copy; Fantasy Orcasitas 2026</div>
+    </div>
+
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="./js/migracion.js"></script>
+</body>
+</html>

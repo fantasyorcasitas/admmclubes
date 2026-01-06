@@ -27,7 +27,7 @@ async function cargarMercado() {
     }
 }
 
-// === 2. RENDERIZAR TARJETAS (DISEÑO ACTUALIZADO) ===
+// === 2. RENDERIZAR TARJETAS ===
 function renderizarAtletas(listaAtletas) {
     if (listaAtletas.length === 0) {
         mercadoGrid.innerHTML = '<p style="text-align:center; color:gray">No hay resultados.</p>';
@@ -37,30 +37,28 @@ function renderizarAtletas(listaAtletas) {
     let htmlAcumulado = '';
 
     listaAtletas.forEach(atleta => {
-        // --- DATOS BÁSICOS ---
+        // DATOS BÁSICOS
         const precioDisplay = (atleta.precio || 0) + 'M';
         
-        // --- DATOS CLAVE (VISIBLES) ---
-        // Si no existen, mostramos un guión
+        // VISIBLES: MMP Y POSICIÓN
         const mmp = atleta.marca_personal || "-";
         const posEsperada = atleta.posicion_esperada || "-";
 
-        // --- DATOS DESPLEGABLES (ÚLTIMA COMPE) ---
+        // DESPLEGABLES: ÚLTIMA COMPE
         const fechaUltima = atleta.fecha_ultima_competicion || "-";
         const marcaUltima = atleta.marca_ultima_competicion || "-";
 
-        // Estadísticas generales (Opcional, las guardamos por si acaso)
-        const historial = atleta.historial_puntos || [];
-        const totalPuntos = historial.reduce((a, b) => a + b, 0);
+        // CAMBIO SOLICITADO: Usar la prueba específica (ej: 400m) en vez de la categoría general
+        // Si no tiene prueba específica, usamos la categoría por defecto
+        const etiquetaPrueba = atleta.pruebas_principales || atleta.categoria || 'ATLETA';
 
-        // --- CONSTRUIR HTML ---
         htmlAcumulado += `
             <div class="athlete-card">
                 <div class="athlete-header">
                     <img src="${atleta.foto}" class="athlete-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/74/74472.png'">
                     <div class="athlete-info">
                         <h3>${atleta.nombre} ${atleta.apellidos || ''}</h3>
-                        <span class="badge-cat">${atleta.categoria || 'ATLETA'}</span>
+                        <span class="badge-cat">${etiquetaPrueba}</span>
                         <div class="price-tag">${precioDisplay}</div>
                     </div>
                 </div>
@@ -97,17 +95,6 @@ function renderizarAtletas(listaAtletas) {
                                 <strong style="color:white; font-size:1rem;">${marcaUltima}</strong>
                             </div>
                         </div>
-
-                        <div style="margin-top:15px; padding-top:10px; border-top:1px solid #333; display:flex; justify-content:center; gap:20px;">
-                            <div style="text-align:center;">
-                                <span style="font-size:0.7rem; color:#666;">PTS TOTALES</span><br>
-                                <span style="color:#ff5e00; font-weight:bold;">${totalPuntos}</span>
-                            </div>
-                            <div style="text-align:center;">
-                                <span style="font-size:0.7rem; color:#666;">JORNADAS</span><br>
-                                <span style="color:white; font-weight:bold;">${historial.length}</span>
-                            </div>
-                        </div>
                     </div>
 
                 </div>
@@ -118,7 +105,6 @@ function renderizarAtletas(listaAtletas) {
     mercadoGrid.innerHTML = htmlAcumulado;
 }
 
-// === 3. FUNCIONES AUXILIARES ===
 window.toggleHistorial = (id) => {
     const el = document.getElementById(`historial-${id}`);
     const btn = event.currentTarget; 
@@ -139,5 +125,4 @@ inputBuscador.addEventListener('input', (e) => {
     renderizarAtletas(filtrados);
 });
 
-// Iniciar
 window.addEventListener('DOMContentLoaded', cargarMercado);

@@ -188,42 +188,26 @@
 
     <nav class="navbar">
         <div class="nav-logo">
-            <a href="home.html">
-                <i class="fa-solid fa-person-running"></i> FANTASY <span>ORCASITAS</span>
-            </a>
+            <a href="home.html"><i class="fa-solid fa-person-running"></i> FANTASY <span>ORCASITAS</span></a>
         </div>
-
-        <button class="menu-toggle" onclick="toggleMenu()">
-            <i class="fa-solid fa-bars"></i>
-        </button>
-
+        <button class="menu-toggle" onclick="toggleMenu()"><i class="fa-solid fa-bars"></i></button>
         <div class="nav-links" id="navLinks">
-            <button class="menu-toggle" onclick="toggleMenu()" style="position: absolute; top: 20px; right: 20px; font-size: 2rem;">
-                <i class="fa-solid fa-times"></i>
-            </button>
-
-             <a href="home.html">INICIO</a>
+            <button class="menu-toggle" onclick="toggleMenu()" style="position: absolute; top: 20px; right: 20px; font-size: 2rem;"><i class="fa-solid fa-times"></i></button>
+            <a href="home.html">INICIO</a>
             <a href="mi_equipo.html">MI EQUIPO</a>
             <a href="mercado.html">MERCADO</a>
             <a href="clasificaciones.html" class="active">RANKING</a>
             <a href="calendario.html">CALENDARIO</a>
-
-            <button onclick="cerrarSesion()" class="btn-logout">
-                <i class="fa-solid fa-power-off"></i> Salir
-            </button>
+            <button onclick="cerrarSesion()" class="btn-logout"><i class="fa-solid fa-power-off"></i> Salir</button>
         </div>
     </nav>
 
     <div class="dashboard-container">
-        
         <h1><i class="fa-solid fa-chart-line"></i> Clasificaciones</h1>
 
         <div class="rankings-wrapper">
-            
             <div class="ranking-card">
-                <div class="ranking-title">
-                    <i class="fa-solid fa-users"></i> Liga Managers
-                </div>
+                <div class="ranking-title"><i class="fa-solid fa-users"></i> Liga Managers</div>
                 <div class="table-responsive">
                     <table class="ranking-table">
                         <thead>
@@ -233,15 +217,15 @@
                                 <th class="pts-col">Pts</th>
                             </tr>
                         </thead>
-                        <tbody id="managersBody"></tbody>
+                        <tbody id="managersBody">
+                            <tr><td colspan="3" style="text-align:center; padding:20px;">Cargando...</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
 
             <div class="ranking-card">
-                <div class="ranking-title">
-                    <i class="fa-solid fa-medal"></i> Ranking Atletas
-                </div>
+                <div class="ranking-title"><i class="fa-solid fa-medal"></i> Ranking Atletas</div>
                 <div class="table-responsive">
                     <table class="ranking-table">
                         <thead>
@@ -251,11 +235,12 @@
                                 <th class="pts-col">Pts</th>
                             </tr>
                         </thead>
-                        <tbody id="atletasBody"></tbody>
+                        <tbody id="atletasBody">
+                            <tr><td colspan="3" style="text-align:center; padding:20px;">Cargando...</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -264,6 +249,111 @@
         function cerrarSesion() { localStorage.removeItem('fantasy_user'); window.location.href = '../index.html'; }
     </script>
 
-    <script type="module" src="../js/clasificaciones.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // TU CONFIGURACIÓN
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZTceWkrcCxPyuFmlC9myC9mmiDb92WLo",
+            authDomain: "extra-ricki.firebaseapp.com",
+            projectId: "extra-ricki",
+            storageBucket: "extra-ricki.firebasestorage.app",
+            messagingSenderId: "989567931458",
+            appId: "1:989567931458:web:796308cff8b89214a349db",
+            measurementId: "G-RE1Q34F3KS"
+        };
+
+        // INICIAR FIREBASE
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // FUNCIÓN PRINCIPAL DE CARGA
+        async function cargarRanking(coleccion, idTabla) {
+            const tbody = document.getElementById(idTabla);
+            if(!tbody) return;
+
+            try {
+                // Descargar datos
+                const snap = await getDocs(collection(db, coleccion));
+                let lista = [];
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    let item = { nombre: "---", puntos: 0 };
+                    let valido = false;
+
+                    if(coleccion === 'usuarios') {
+                        // --- MANAGERS ---
+                        // Intenta varios campos de nombre por si acaso
+                        const nom = d.nombre_usuario || d.nick || d.email || "Usuario";
+                        // Importante: puntos_total
+                        const pts = Number(d.puntos_total) || 0; 
+                        
+                        item.nombre = nom;
+                        item.puntos = pts;
+                        valido = true;
+                    } else {
+                        // --- ATLETAS ---
+                        const nom = d.nombre || "Atleta";
+                        const ape = d.apellidos || "";
+                        const pts = Number(d.puntos) || 0;
+
+                        item.nombre = `${nom} ${ape}`.trim();
+                        item.puntos = pts;
+                        valido = true;
+                    }
+
+                    if(valido) lista.push(item);
+                });
+
+                // Ordenar (Mayor a menor)
+                lista.sort((a, b) => b.puntos - a.puntos);
+
+                // Dibujar
+                tbody.innerHTML = "";
+                if(lista.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:#666;">Sin datos.</td></tr>`;
+                    return;
+                }
+
+                lista.forEach((dato, i) => {
+                    const tr = document.createElement('tr');
+                    
+                    // Medallas
+                    let pos = i + 1;
+                    let icono = `<span style="color:#666;">${pos}</span>`;
+                    let colorFila = "";
+
+                    if(i === 0) { icono = '🥇'; colorFila = "background:rgba(255, 215, 0, 0.1);"; }
+                    if(i === 1) { icono = '🥈'; colorFila = "background:rgba(192, 192, 192, 0.1);"; }
+                    if(i === 2) { icono = '🥉'; colorFila = "background:rgba(205, 127, 50, 0.1);"; }
+
+                    tr.innerHTML = `
+                        <td class="rank-col" style="font-size:1.2rem;">${icono}</td>
+                        <td style="color:#ddd;">${dato.nombre}</td>
+                        <td class="pts-col">${dato.puntos}</td>
+                    `;
+                    
+                    // Animación y estilo fila
+                    tr.style = colorFila;
+                    tr.style.opacity = "0";
+                    tr.style.animation = `slideIn 0.3s ease-out forwards ${i * 0.05}s`;
+                    
+                    tbody.appendChild(tr);
+                });
+
+            } catch (e) {
+                console.error("Error cargando " + coleccion, e);
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#e84118;">Error de conexión.</td></tr>`;
+            }
+        }
+
+        // EJECUTAR AL CARGAR
+        window.addEventListener('DOMContentLoaded', () => {
+            cargarRanking('usuarios', 'managersBody');
+            cargarRanking('atletas', 'atletasBody');
+        });
+    </script>
 </body>
 </html>

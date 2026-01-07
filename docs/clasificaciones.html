@@ -2,37 +2,58 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clasificaciones</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Clasificación</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         /* ESTILOS BASE */
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; } /* CRUCIAL PARA EVITAR EL DESPLAZAMIENTO */
+        
+        html { background-color: #000000 !important; }
         body {
-            margin: 0; padding: 0;
-            font-family: 'Montserrat', sans-serif;
-            background-color: #000;
-            color: white;
-            min-height: 100vh;
+            display: block !important; height: auto !important; min-height: 100vh; overflow-y: auto !important;
+            background-color: transparent !important; margin: 0; padding: 0;
+            font-family: 'Montserrat', sans-serif; position: relative; 
         }
 
         /* FONDO */
         .bg-image {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover;
-            z-index: -2; opacity: 0.6;
-        }
-        .bg-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.95));
-            z-index: -1;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    /* Foto de una pista de atletismo real */
+    background: url('https://images.unsplash.com/photo-1532444458054-01a7dd3e9fca?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover;
+    z-index: -2;
+    transform: scale(1.05); /* Zoom sutil */
+}
+
+.bg-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
+    z-index: -1;
+    backdrop-filter: blur(4px); /* Difumina la foto de fondo */
+}
+
+        /* DASHBOARD - AQUÍ ESTÁ EL ARREGLO DE ALINEACIÓN */
+        .dashboard-container {
+            padding-top: 40px !important;
+            padding-bottom: 80px !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            /* Añadimos padding lateral para asegurar márgenes en móvil */
+            padding-left: 15px;
+            padding-right: 15px; 
+            position: relative; z-index: 1;
         }
 
-        /* =========================================
-           2. BARRA DE NAVEGACIÓN (NAVBAR)
-           ========================================= */
+        /* NAVBAR */
         .navbar {
             position: sticky; /* Se pega arriba al hacer scroll */
             top: 0;
@@ -75,7 +96,7 @@
         }
 
         .nav-links a:hover, .nav-links a.active {
-            color: #ff5e00;
+        color: #ff5e00 !important; /* Naranja */
         }
 
         .btn-logout {
@@ -96,113 +117,64 @@
             cursor: pointer;
         }
 
-        /* CONTENEDOR PRINCIPAL */
-        .container {
-            max-width: 1200px; margin: 0 auto; padding: 20px;
-            text-align: center;
+        /* CLASIFICACIONES */
+        h1 {
+            color: white; text-transform: uppercase; margin-bottom: 20px; text-align: center;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5); font-size: 2.2rem; font-weight: 800;
         }
 
-        h1 { text-transform: uppercase; margin-bottom: 40px; font-size: 2rem; }
-
-        /* LAYOUT DE DOBLE COLUMNA */
-        .rankings-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            align-items: start;
+        .rankings-wrapper {
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 20px; 
+            width: 100%; 
+            max-width: 1200px;
         }
 
-        /* CAJAS DE RANKING */
-        .ranking-box {
-            background: rgba(20, 20, 20, 0.95);
+        .ranking-card {
+            flex: 1; 
+            min-width: 300px; 
+            /* En móvil usaremos width 100% para evitar desbordes */
+            width: 100%; 
+            background: rgba(20, 20, 20, 0.95); 
+            border-radius: 10px; 
+            padding: 20px; 
             border: 1px solid #333;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
-        .ranking-header {
-            background: #111;
-            padding: 15px;
-            border-bottom: 2px solid #ff5e00;
-            text-align: left;
-            font-weight: 800;
-            color: #ff5e00;
-            display: flex; align-items: center; gap: 10px;
+        .ranking-title {
+            color: #ff5e00; font-size: 1.2rem; margin-bottom: 15px; text-transform: uppercase;
+            font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 10px;
         }
 
-        /* TABLAS */
-        .ranking-table { width: 100%; border-collapse: collapse; }
-        .ranking-table th {
-            background: #222; color: #888; font-size: 0.75rem; text-transform: uppercase;
-            padding: 10px; text-align: left;
-        }
-        .ranking-table td {
-            padding: 12px 10px; border-bottom: 1px solid #333; font-size: 0.9rem;
-            text-align: left;
-        }
-        .ranking-table tr:last-child td { border-bottom: none; }
-        
-        /* COLUMNAS ESPECÍFICAS */
-        .col-pos { width: 50px; text-align: center !important; font-weight: bold; color: #666; }
-        .col-pts { width: 80px; text-align: right !important; font-weight: bold; color: white; }
-        .col-name { color: #ddd; }
-        .col-sub { font-size: 0.75rem; color: #666; display: block; }
+        .ranking-table { width: 100%; border-collapse: collapse; color: white; }
+        .ranking-table th { padding: 10px; text-align: left; color: #888; font-size: 0.85rem; text-transform: uppercase; }
+        .ranking-table td { padding: 12px 10px; border-bottom: 1px solid #333; font-weight: 600; }
+        .rank-col { text-align: center; width: 40px; color: #666; }
+        .pts-col { text-align: right; width: 60px; color: #ff5e00; font-weight: 800; }
 
-        /* ESTILOS TOP 3 */
-        .top-1 .col-pos { color: #ffd700 !important; font-size: 1.2rem; } /* Oro */
-        .top-2 .col-pos { color: #c0c0c0 !important; font-size: 1.1rem; } /* Plata */
-        .top-3 .col-pos { color: #cd7f32 !important; font-size: 1.1rem; } /* Bronce */
-        
-        .top-1 { background: rgba(255, 215, 0, 0.05); }
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-        /* =========================================
-           5. RESPONSIVE MÓVIL (MENÚ OVERLAY)
-           ========================================= */
+        /* RESPONSIVE MÓVIL */
         @media (max-width: 768px) {
-            .navbar {
-                padding: 10px 15px;
-                height: 60px;
-            }
+            .navbar { padding: 10px 15px !important; }
+            .menu-toggle { display: block !important; }
 
-            .menu-toggle { display: block; }
-            .nav-logo a { font-size: 1rem; }
-
-            /* MENÚ A PANTALLA COMPLETA */
             .nav-links {
-                position: fixed;
-                top: 0; left: 0;
-                width: 100%; height: 100vh;
-                background-color: rgba(0,0,0,0.98);
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                z-index: 5000;
-                transform: translateX(100%); /* Oculto a la derecha */
-                transition: transform 0.3s ease-in-out;
+                position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+                background-color: rgba(0,0,0,0.98); flex-direction: column; justify-content: center; align-items: center;
+                z-index: 6000; transform: translateX(100%); transition: transform 0.3s ease-in-out;
             }
+            .nav-links.active { transform: translateX(0); }
+            .nav-links a { font-size: 1.5rem; margin: 20px 0; color: white !important; display: block; }
+            .btn-logout { margin-top: 30px; font-size: 1.5rem; }
 
-            .nav-links.active {
-                transform: translateX(0); /* Visible */
-            }
-
-            .nav-links a {
-                font-size: 1.5rem;
-                margin: 20px 0;
-                color: white;
-            }
-
-            .btn-logout {
-                margin-top: 30px;
-                font-size: 1.5rem;
-            }
-
-            /* REJILLA A 1 COLUMNA */
-            .market-grid {
-                grid-template-columns: 1fr;
-            }
-
-            h1 { font-size: 1.5rem; margin: 15px 0; }
+            /* Ajustes finos para móvil */
+            .dashboard-container { padding-left: 15px; padding-right: 15px; }
+            .ranking-card { margin-bottom: 20px; }
+            h1 { font-size: 1.8rem; margin-top: 10px; }
         }
     </style>
 </head>
@@ -212,157 +184,83 @@
     <div class="bg-overlay"></div>
 
     <nav class="navbar">
-        <a href="home.html" class="nav-logo"><i class="fa-solid fa-person-running"></i> FANTASY <span>ATLETISMO</span></a>
-        <div class="nav-links">
-            <a href="home.html">INICIO</a>
+        <div class="nav-logo">
+            <a href="home.html">
+                <i class="fa-solid fa-person-running"></i> FANTASY <span>ATLETISMO</span>
+            </a>
+        </div>
+
+        <button class="menu-toggle" onclick="toggleMenu()">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="nav-links" id="navLinks">
+            <button class="menu-toggle" onclick="toggleMenu()" style="position: absolute; top: 20px; right: 20px; font-size: 2rem;">
+                <i class="fa-solid fa-times"></i>
+            </button>
+
+             <a href="home.html">INICIO</a>
             <a href="mi_equipo.html">MI EQUIPO</a>
             <a href="mercado.html">MERCADO</a>
             <a href="clasificaciones.html" class="active">RANKING</a>
             <a href="calendario.html">CALENDARIO</a>
-            <a href="../index.html" onclick="localStorage.removeItem('fantasy_user')">SALIR</a>
+
+            <button onclick="cerrarSesion()" class="btn-logout">
+                <i class="fa-solid fa-power-off"></i> Salir
+            </button>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="dashboard-container">
+        
         <h1><i class="fa-solid fa-chart-line"></i> Clasificaciones</h1>
 
-        <div class="rankings-grid">
+        <div class="rankings-wrapper">
             
-            <div class="ranking-box">
-                <div class="ranking-header">
-                    <i class="fa-solid fa-users"></i> LIGA MANAGERS
+            <div class="ranking-card">
+                <div class="ranking-title">
+                    <i class="fa-solid fa-users"></i> Liga Managers
                 </div>
-                <table class="ranking-table">
-                    <thead>
-                        <tr>
-                            <th class="col-pos">#</th>
-                            <th>MANAGER / EQUIPO</th>
-                            <th class="col-pts">PTS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaManagers">
-                        <tr><td colspan="3" style="text-align:center; padding:20px;">Cargando...</td></tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="ranking-table">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #444;">
+                                <th class="rank-col">#</th>
+                                <th>Manager</th>
+                                <th class="pts-col">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="managersBody"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="ranking-box">
-                <div class="ranking-header">
-                    <i class="fa-solid fa-medal"></i> RANKING ATLETAS
+            <div class="ranking-card">
+                <div class="ranking-title">
+                    <i class="fa-solid fa-medal"></i> Ranking Atletas
                 </div>
-                <table class="ranking-table">
-                    <thead>
-                        <tr>
-                            <th class="col-pos">#</th>
-                            <th>ATLETA</th>
-                            <th class="col-pts">PTS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaAtletas">
-                        <tr><td colspan="3" style="text-align:center; padding:20px;">Cargando...</td></tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="ranking-table">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #444;">
+                                <th class="rank-col">#</th>
+                                <th>Atleta</th>
+                                <th class="pts-col">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="atletasBody"></tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
     </div>
 
-    <script type="module">
-        import { db } from "../js/firebase-config.js"; 
-        // Asegúrate de que la ruta "../js/firebase-config.js" es correcta. 
-        // Si este archivo está en la carpeta 'docs', la ruta está bien.
-
-        import { collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        async function cargarRankings() {
-            const tablaManagers = document.getElementById('tablaManagers');
-            const tablaAtletas = document.getElementById('tablaAtletas');
-
-            try {
-                // 1. CARGAR MANAGERS (Colección 'usuarios')
-                // Ordenamos por 'puntos_total' de mayor a menor
-                const qUsers = query(collection(db, "usuarios"), orderBy("puntos_total", "desc"));
-                const snapUsers = await getDocs(qUsers);
-                
-                let htmlUsers = "";
-                let posUser = 1;
-
-                snapUsers.forEach(doc => {
-                    const u = doc.data();
-                    const nombre = u.nombre_usuario || "Usuario"; // Fallback por si no tiene nombre
-                    const equipo = u.nombre_equipo || "Sin Equipo";
-                    const puntos = u.puntos_total || 0;
-
-                    // Clases para colores top 3
-                    let rowClass = "";
-                    if (posUser === 1) rowClass = "top-1";
-                    if (posUser === 2) rowClass = "top-2";
-                    if (posUser === 3) rowClass = "top-3";
-
-                    htmlUsers += `
-                        <tr class="${rowClass}">
-                            <td class="col-pos">${posUser}</td>
-                            <td class="col-name">
-                                ${nombre}
-                                <span class="col-sub">${equipo}</span>
-                            </td>
-                            <td class="col-pts">${puntos}</td>
-                        </tr>
-                    `;
-                    posUser++;
-                });
-                
-                if (posUser === 1) htmlUsers = '<tr><td colspan="3" style="text-align:center">No hay managers aún.</td></tr>';
-                tablaManagers.innerHTML = htmlUsers;
-
-
-                // 2. CARGAR ATLETAS (Colección 'atletas')
-                // Ordenamos por 'puntos' de mayor a menor
-                // Limitamos a 50 para que no sea infinito si hay muchos
-                const qAtletas = query(collection(db, "atletas"), orderBy("puntos", "desc"), limit(50));
-                const snapAtletas = await getDocs(qAtletas);
-
-                let htmlAtletas = "";
-                let posAtl = 1;
-
-                snapAtletas.forEach(doc => {
-                    const a = doc.data();
-                    const nombre = `${a.nombre} ${a.apellidos || ''}`;
-                    const cat = a.categoria || "Atleta";
-                    const puntos = a.puntos || 0;
-
-                    let rowClass = "";
-                    if (posAtl === 1) rowClass = "top-1";
-                    if (posAtl === 2) rowClass = "top-2";
-                    if (posAtl === 3) rowClass = "top-3";
-
-                    htmlAtletas += `
-                        <tr class="${rowClass}">
-                            <td class="col-pos">${posAtl}</td>
-                            <td class="col-name">
-                                ${nombre}
-                                <span class="col-sub">${cat}</span>
-                            </td>
-                            <td class="col-pts">${puntos}</td>
-                        </tr>
-                    `;
-                    posAtl++;
-                });
-
-                if (posAtl === 1) htmlAtletas = '<tr><td colspan="3" style="text-align:center">No hay atletas puntuados.</td></tr>';
-                tablaAtletas.innerHTML = htmlAtletas;
-
-            } catch (error) {
-                console.error("Error cargando rankings:", error);
-                const errorMsg = `<tr><td colspan="3" style="text-align:center; color:#ff4444; padding:20px;">Error conexión: ${error.message}</td></tr>`;
-                tablaManagers.innerHTML = errorMsg;
-                tablaAtletas.innerHTML = errorMsg;
-            }
-        }
-
-        // Ejecutar al cargar
-        window.addEventListener('DOMContentLoaded', cargarRankings);
+    <script>
+        function toggleMenu() { document.getElementById('navLinks').classList.toggle('active'); }
+        function cerrarSesion() { localStorage.removeItem('fantasy_user'); window.location.href = '../index.html'; }
     </script>
 
+    <script type="module" src="../js/clasificaciones.js"></script>
 </body>
 </html>

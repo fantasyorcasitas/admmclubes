@@ -2,69 +2,36 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#000000">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendario | Fantasy Orcasitas</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-
     <style>
-        /* =========================================
-           1. ESTILOS BASE (ARQUITECTURA COMÚN)
-           ========================================= */
+        /* ESTILOS BASE */
         * { box-sizing: border-box; }
-
-        html { background-color: #000000 !important; }
-
         body {
-            display: block !important;
-            height: auto !important;
-            min-height: 100vh;
-            overflow-y: auto !important;
-            background-color: transparent !important;
             margin: 0; padding: 0;
             font-family: 'Montserrat', sans-serif;
-            position: relative; 
+            background-color: #000;
+            color: white;
+            min-height: 100vh;
         }
 
         /* FONDO */
         .bg-image {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    /* Foto de una pista de atletismo real */
-    background: url('https://images.unsplash.com/photo-1532444458054-01a7dd3e9fca?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover;
-    z-index: -2;
-    transform: scale(1.05); /* Zoom sutil */
-}
-
-.bg-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
-    z-index: -1;
-    backdrop-filter: blur(4px); /* Difumina la foto de fondo */
-}
-
-        .dashboard-container {
-            padding-top: 40px !important;
-            padding-bottom: 100px !important;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            padding-left: 15px; /* Margen seguro a los lados */
-            padding-right: 15px;
-            position: relative;
-            z-index: 1;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://images.unsplash.com/photo-1587280501635-68a6e82cd7db?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover;
+            z-index: -2; opacity: 0.4;
+        }
+        .bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), #000);
+            z-index: -1;
         }
 
         /* =========================================
-           2. NAVBAR (ESTANDARIZADA)
+           2. BARRA DE NAVEGACIÓN (NAVBAR)
            ========================================= */
         .navbar {
             position: sticky; /* Se pega arriba al hacer scroll */
@@ -108,87 +75,116 @@
         }
 
         .nav-links a:hover, .nav-links a.active {
-        color: #ff5e00 !important; /* Naranja */
+            color: #ff5e00;
         }
 
-        .btn-logout { background: none; border: none; color: #ff5e00 !important; font-size: 1.2rem; cursor: pointer; margin-left: 15px; }
-        .menu-toggle { display: none !important; background: none; border: none; color: white !important; font-size: 1.5rem; cursor: pointer; }
-
-        /* =========================================
-           3. ESTILOS CALENDARIO
-           ========================================= */
-        h1 {
-            color: white; text-transform: uppercase; margin-bottom: 25px; text-align: center;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.5); font-size: 2rem; font-weight: 800;
+        .btn-logout {
+            background: none;
+            border: none;
+            color: #ff5e00;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: 10px;
         }
 
-        /* Tarjeta de Competición */
-        .compe-card {
+        .menu-toggle {
+            display: none; /* Oculto en PC */
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        .container {
+            max-width: 1000px; margin: 40px auto; padding: 0 20px 100px 20px;
+        }
+
+        h1 { text-align: center; text-transform: uppercase; margin-bottom: 10px; font-size: 1.8rem; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .subtitle { text-align: center; color: #ff5e00; font-weight: 700; margin-bottom: 40px; font-size: 1.2rem; }
+
+        /* TABLAS DE HORARIO */
+        .schedule-section { margin-bottom: 50px; }
+        .section-title {
+            background: #ff5e00; color: white; padding: 10px 20px; border-radius: 8px 8px 0 0;
+            font-weight: 800; text-transform: uppercase; display: inline-block;
+        }
+
+        .table-wrapper {
             background: rgba(20, 20, 20, 0.95);
             border: 1px solid #333;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 600px;
-            margin-bottom: 20px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            border-radius: 0 8px 8px 8px;
+            overflow-x: auto; /* Scroll horizontal en móvil */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .compe-header { padding: 20px; border-bottom: 1px solid #333; }
-        .compe-date { color: #ff5e00; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
-        .compe-name { color: white; font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; line-height: 1.2; }
-        .compe-location { color: #aaa; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
-
-        /* Etiquetas de Estado */
-        .status-badge {
-            position: absolute; top: 20px; right: 20px;
-            padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase;
-        }
-        .status-pending { background: rgba(255, 174, 0, 0.15); color: #ffae00; border: 1px solid #ffae00; }
-        .status-finished { background: rgba(76, 209, 55, 0.15); color: #4cd137; border: 1px solid #4cd137; }
-
-        /* Detalles / Acordeón */
-        .history-section { width: 100%; max-width: 600px; margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
         
-        details { width: 100%; margin-bottom: 10px; }
-        summary {
-            background: rgba(30, 30, 30, 0.9); color: white; padding: 15px; border-radius: 8px;
-            cursor: pointer; font-weight: bold; border: 1px solid #444;
-            list-style: none; display: flex; justify-content: space-between; align-items: center;
-            text-transform: uppercase; font-size: 0.9rem;
+        th {
+            background: #151515; color: #aaa; text-align: left; padding: 15px;
+            font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid #333;
         }
-        summary::-webkit-details-marker { display: none; }
-        summary::after { content: '▼'; color: #ff5e00; }
-        details[open] summary::after { content: '▲'; }
+        
+        td { padding: 12px 15px; border-bottom: 1px solid #2a2a2a; font-size: 0.9rem; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: rgba(255, 94, 0, 0.05); }
 
-        /* Tabla de Resultados */
-        .results-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; color: #ddd; }
-        .results-table th { text-align: left; color: #888; padding: 10px; border-bottom: 1px solid #333; font-size: 0.7rem; text-transform: uppercase; }
-        .results-table td { padding: 12px 10px; border-bottom: 1px solid #222; }
-        .results-table tr:last-child td { border-bottom: none; }
-        .res-mark { color: white; font-weight: bold; }
-        .res-pts { color: #ff5e00; font-weight: 800; text-align: right; }
+        /* COLUMNAS ESPECÍFICAS */
+        .col-time { font-weight: bold; color: #ff5e00; font-family: monospace; font-size: 1rem; width: 100px; }
+        .col-event { font-weight: 700; color: white; }
+        .col-sex { text-align: center; font-weight: bold; width: 50px; }
+        .sex-m { color: #3498db; }
+        .sex-f { color: #e91e63; }
+        .col-camara { color: #888; font-size: 0.8rem; }
 
         /* =========================================
-           4. RESPONSIVE MÓVIL (MENU OVERLAY)
+           5. RESPONSIVE MÓVIL (MENÚ OVERLAY)
            ========================================= */
         @media (max-width: 768px) {
-            .navbar { padding: 10px 15px !important; }
-            .menu-toggle { display: block !important; }
+            .navbar {
+                padding: 10px 15px;
+                height: 60px;
+            }
 
+            .menu-toggle { display: block; }
+            .nav-logo a { font-size: 1rem; }
+
+            /* MENÚ A PANTALLA COMPLETA */
             .nav-links {
-                position: fixed; top: 0; left: 0;
+                position: fixed;
+                top: 0; left: 0;
                 width: 100%; height: 100vh;
                 background-color: rgba(0,0,0,0.98);
-                flex-direction: column; justify-content: center; align-items: center;
-                z-index: 6000; transform: translateX(100%); transition: transform 0.3s ease-in-out;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 5000;
+                transform: translateX(100%); /* Oculto a la derecha */
+                transition: transform 0.3s ease-in-out;
             }
-            .nav-links.active { transform: translateX(0); }
-            .nav-links a { font-size: 1.5rem; margin: 20px 0; color: white !important; display: block; }
-            .btn-logout { margin-top: 30px; font-size: 1.5rem; }
 
-            h1 { font-size: 1.8rem; margin-top: 10px; margin-bottom: 20px; }
+            .nav-links.active {
+                transform: translateX(0); /* Visible */
+            }
+
+            .nav-links a {
+                font-size: 1.5rem;
+                margin: 20px 0;
+                color: white;
+            }
+
+            .btn-logout {
+                margin-top: 30px;
+                font-size: 1.5rem;
+            }
+
+            /* REJILLA A 1 COLUMNA */
+            .market-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 { font-size: 1.5rem; margin: 15px 0; }
         }
     </style>
 </head>
@@ -198,148 +194,103 @@
     <div class="bg-overlay"></div>
 
     <nav class="navbar">
-        <div class="nav-logo">
-            <a href="home.html">
-                <i class="fa-solid fa-person-running"></i> FANTASY <span>ORCASITAS</span>
-            </a>
-        </div>
-
-        <button class="menu-toggle" onclick="toggleMenu()">
-            <i class="fa-solid fa-bars"></i>
-        </button>
-
-        <div class="nav-links" id="navLinks">
-            <button class="menu-toggle" onclick="toggleMenu()" style="position: absolute; top: 20px; right: 20px; font-size: 2rem;">
-                <i class="fa-solid fa-times"></i>
-            </button>
-
-             <a href="home.html">INICIO</a>
-            <a href="mi_equipo.html" >MI EQUIPO</a>
+        <a href="home.html" class="nav-logo"><i class="fa-solid fa-person-running"></i> FANTASY <span>ORCASITAS</span></a>
+        <div class="nav-links">
+            <a href="home.html">INICIO</a>
+            <a href="mi_equipo.html">MI EQUIPO</a>
             <a href="mercado.html">MERCADO</a>
             <a href="clasificaciones.html">RANKING</a>
             <a href="calendario.html" class="active">CALENDARIO</a>
-
-            <button onclick="cerrarSesion()" class="btn-logout">
-                <i class="fa-solid fa-power-off"></i> Salir
-            </button>
+            <a href="../index.html" onclick="localStorage.removeItem('fantasy_user')">SALIR</a>
         </div>
     </nav>
 
-    <div class="dashboard-container">
-        <h1><i class="fa-regular fa-calendar-days"></i> Calendario</h1>
-        
-        <div id="pendingList" style="width: 100%; max-width: 600px;">
-            <p style="color:#aaa; text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</p>
+    <div class="container">
+        <h1><i class="fa-solid fa-calendar-days"></i> Horario Oficial</h1>
+        <div class="subtitle">CAMPEONATO DE MADRID DE CLUBES ABSOLUTO PC</div>
+
+        <div class="schedule-section">
+            <div class="section-title"><i class="fa-solid fa-stopwatch"></i> Carreras</div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th title="Hora de la prueba">Hora</th>
+                            <th>Prueba</th>
+                            <th>Sexo</th>
+                            <th>Serie</th>
+                            <th title="Hora de Cámara de Llamadas">Cámara</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="col-time">16:00</td><td class="col-event">60m Vallas</td><td class="col-sex sex-m">M</td><td>Serie 1</td><td class="col-camara">15:50</td></tr>
+                        <tr><td class="col-time">16:05</td><td class="col-event">60m Vallas</td><td class="col-sex sex-m">M</td><td>Serie 2</td><td class="col-camara">15:55</td></tr>
+                        <tr><td class="col-time">16:10</td><td class="col-event">60m Vallas</td><td class="col-sex sex-f">F</td><td>Serie 1</td><td class="col-camara">16:00</td></tr>
+                        <tr><td class="col-time">16:15</td><td class="col-event">60m Vallas</td><td class="col-sex sex-f">F</td><td>Serie 2</td><td class="col-camara">16:05</td></tr>
+                        
+                        <tr><td class="col-time">16:20</td><td class="col-event">60m Lisos</td><td class="col-sex sex-m">M</td><td>Serie 1</td><td class="col-camara">16:10</td></tr>
+                        <tr><td class="col-time">16:25</td><td class="col-event">60m Lisos</td><td class="col-sex sex-m">M</td><td>Serie 2</td><td class="col-camara">16:15</td></tr>
+                        <tr><td class="col-time">16:30</td><td class="col-event">60m Lisos</td><td class="col-sex sex-f">F</td><td>Serie 1</td><td class="col-camara">16:20</td></tr>
+                        <tr><td class="col-time">16:35</td><td class="col-event">60m Lisos</td><td class="col-sex sex-f">F</td><td>Serie 2</td><td class="col-camara">16:25</td></tr>
+
+                        <tr><td class="col-time">16:45</td><td class="col-event">400m Lisos</td><td class="col-sex sex-m">M</td><td>Serie 1</td><td class="col-camara">16:35</td></tr>
+                        <tr><td class="col-time">16:49</td><td class="col-event">400m Lisos</td><td class="col-sex sex-m">M</td><td>Serie 2</td><td class="col-camara">16:39</td></tr>
+                        <tr><td class="col-time">16:53</td><td class="col-event">400m Lisos</td><td class="col-sex sex-f">F</td><td>Serie 1</td><td class="col-camara">16:43</td></tr>
+                        <tr><td class="col-time">16:57</td><td class="col-event">400m Lisos</td><td class="col-sex sex-f">F</td><td>Serie 2</td><td class="col-camara">16:47</td></tr>
+
+                        <tr><td class="col-time">17:01</td><td class="col-event">200m Lisos</td><td class="col-sex sex-m">M</td><td>Serie 1</td><td class="col-camara">16:51</td></tr>
+                        <tr><td class="col-time">17:05</td><td class="col-event">200m Lisos</td><td class="col-sex sex-m">M</td><td>Serie 2</td><td class="col-camara">16:55</td></tr>
+                        <tr><td class="col-time">17:09</td><td class="col-event">200m Lisos</td><td class="col-sex sex-f">F</td><td>Serie 1</td><td class="col-camara">16:59</td></tr>
+                        <tr><td class="col-time">17:13</td><td class="col-event">200m Lisos</td><td class="col-sex sex-f">F</td><td>Serie 2</td><td class="col-camara">17:03</td></tr>
+
+                        <tr><td class="col-time">17:17</td><td class="col-event">800m Lisos</td><td class="col-sex sex-m">M</td><td>Serie 1</td><td class="col-camara">17:07</td></tr>
+                        <tr><td class="col-time">17:22</td><td class="col-event">800m Lisos</td><td class="col-sex sex-m">M</td><td>Serie 2</td><td class="col-camara">17:12</td></tr>
+                        <tr><td class="col-time">17:27</td><td class="col-event">800m Lisos</td><td class="col-sex sex-f">F</td><td>Serie 1</td><td class="col-camara">17:17</td></tr>
+                        <tr><td class="col-time">17:32</td><td class="col-event">800m Lisos</td><td class="col-sex sex-f">F</td><td>Serie 2</td><td class="col-camara">17:22</td></tr>
+
+                        <tr><td class="col-time">17:37</td><td class="col-event">1500m Lisos</td><td class="col-sex sex-m">M</td><td>Serie 1</td><td class="col-camara">17:27</td></tr>
+                        <tr><td class="col-time">17:47</td><td class="col-event">1500m Lisos</td><td class="col-sex sex-f">F</td><td>Serie 2</td><td class="col-camara">17:27</td></tr> <tr><td class="col-time">17:57</td><td class="col-event">3000m Lisos</td><td class="col-sex sex-m">M</td><td>Serie 1</td><td class="col-camara">17:47</td></tr>
+                        <tr><td class="col-time">18:10</td><td class="col-event">3000m Lisos</td><td class="col-sex sex-f">F</td><td>Serie 2</td><td class="col-camara">18:00</td></tr>
+
+                        <tr style="border-top: 2px solid #444;"><td class="col-time">18:25</td><td class="col-event">Relevo 4x400</td><td class="col-sex sex-m">M</td><td>Serie 1</td><td class="col-camara">18:15</td></tr>
+                        <tr><td class="col-time">18:30</td><td class="col-event">Relevo 4x400</td><td class="col-sex sex-m">M</td><td>Serie 2</td><td class="col-camara">18:20</td></tr>
+                        <tr><td class="col-time">18:35</td><td class="col-event">Relevo 4x400</td><td class="col-sex sex-f">F</td><td>Serie 1</td><td class="col-camara">18:25</td></tr>
+                        <tr><td class="col-time">18:40</td><td class="col-event">Relevo 4x400</td><td class="col-sex sex-f">F</td><td>Serie 2</td><td class="col-camara">18:30</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="history-section">
-            <details>
-                <summary>VER RESULTADOS ANTERIORES</summary>
-                <div id="finishedList" style="margin-top: 20px;">
-                    </div>
-            </details>
+        <div class="schedule-section">
+            <div class="section-title" style="background: #4cd137;"><i class="fa-solid fa-person-running"></i> Concursos</div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th title="Hora de inicio de la prueba">Hora</th>
+                            <th>Prueba</th>
+                            <th>Sexo</th>
+                            <th title="Hora de Cámara de Llamadas">Cámara</th>
+                            <th title="Hora de Acceso a Pista">Pista</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="col-time">15:00</td><td class="col-event">Pértiga</td><td class="col-sex sex-m">M</td><td class="col-camara">14:15</td><td class="col-camara">14:20</td></tr>
+                        <tr><td class="col-time">15:20</td><td class="col-event">Longitud</td><td class="col-sex sex-f">F</td><td class="col-camara">14:45</td><td class="col-camara">14:50</td></tr>
+                        <tr><td class="col-time">15:45</td><td class="col-event">Peso (4kg)</td><td class="col-sex sex-f">F</td><td class="col-camara">15:10</td><td class="col-camara">15:15</td></tr>
+                        <tr><td class="col-time">16:00</td><td class="col-event">Altura</td><td class="col-sex sex-m">M</td><td class="col-camara">15:25</td><td class="col-camara">15:30</td></tr>
+                        <tr><td class="col-time">16:25</td><td class="col-event">Longitud</td><td class="col-sex sex-m">M</td><td class="col-camara">15:50</td><td class="col-camara">15:55</td></tr>
+                        <tr><td class="col-time">16:45</td><td class="col-event">Peso (7.26kg)</td><td class="col-sex sex-m">M</td><td class="col-camara">16:10</td><td class="col-camara">16:15</td></tr>
+                        <tr><td class="col-time">17:30</td><td class="col-event">Altura</td><td class="col-sex sex-f">F</td><td class="col-camara">16:55</td><td class="col-camara">17:00</td></tr>
+                        <tr><td class="col-time">17:30</td><td class="col-event">Triple Salto</td><td class="col-sex sex-m">M</td><td class="col-camara">16:55</td><td class="col-camara">17:00</td></tr>
+                        <tr><td class="col-time">17:40</td><td class="col-event">Pértiga</td><td class="col-sex sex-f">F</td><td class="col-camara">16:55</td><td class="col-camara">17:00</td></tr>
+                        <tr><td class="col-time">18:40</td><td class="col-event">Triple Salto</td><td class="col-sex sex-f">F</td><td class="col-camara">18:05</td><td class="col-camara">18:10</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+
     </div>
 
-    <script>
-        function toggleMenu() { document.getElementById('navLinks').classList.toggle('active'); }
-        function cerrarSesion() { localStorage.removeItem('fantasy_user'); window.location.href = '../index.html'; }
-    </script>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBmwfxAGq6dzy6RegYcWQHd4XgDgn1QJiM",
-            authDomain: "fantasy-atletismo-26.firebaseapp.com",
-            projectId: "fantasy-atletismo-26",
-            storageBucket: "fantasy-atletismo-26.firebasestorage.app",
-            messagingSenderId: "133833651406",
-            appId: "1:133833651406:web:4e2841f58fd2a288c30c9f"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        async function loadCalendar() {
-            const pendingContainer = document.getElementById('pendingList');
-            const finishedContainer = document.getElementById('finishedList');
-            
-            pendingContainer.innerHTML = '<p style="text-align:center; color:#aaa;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando competiciones...</p>';
-            finishedContainer.innerHTML = '';
-
-            try {
-                const q = query(collection(db, "competiciones"), orderBy("fecha", "asc"));
-                const snapshot = await getDocs(q);
-                
-                let pendingHTML = '';
-                let finishedHTML = '';
-
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const fechaObj = new Date(data.fecha);
-                    const fechaStr = fechaObj.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
-
-                    if (data.estado === 'finalizada') {
-                        let rows = '';
-                        if(data.participantes && data.participantes.length > 0) {
-                            const sorted = data.participantes.sort((a,b) => b.puntos - a.puntos);
-                            sorted.forEach(p => {
-                                rows += `
-                                    <tr>
-                                        <td class="res-mark">${p.resultado || '-'}</td>
-                                        <td>
-                                            <div style="color:white; font-weight:bold;">${p.nombre_completo}</div>
-                                            <div style="color:#888; font-size:0.75rem;">${p.prueba}</div>
-                                        </td>
-                                        <td class="res-pts">+${p.puntos}</td>
-                                    </tr>`;
-                            });
-                        } else {
-                            rows = '<tr><td colspan="3" style="text-align:center; color:#666;">Sin datos detallados</td></tr>';
-                        }
-
-                        finishedHTML += `
-                            <div class="compe-card">
-                                <div class="compe-header">
-                                    <div class="status-badge status-finished">FINALIZADA</div>
-                                    <div class="compe-date">${fechaStr}</div>
-                                    <div class="compe-name">${data.nombre}</div>
-                                    <div class="compe-location"><i class="fa-solid fa-location-dot"></i> ${data.lugar}</div>
-                                </div>
-                                <div style="padding: 15px; background: rgba(0,0,0,0.3);">
-                                    <table class="results-table">
-                                        <thead><tr><th>Marca/Pos</th><th>Atleta</th><th style="text-align:right;">Pts</th></tr></thead>
-                                        <tbody>${rows}</tbody>
-                                    </table>
-                                </div>
-                            </div>`;
-                    } else {
-                        const pruebas = data.pruebas_resumen ? `<div style="margin-top:10px; font-size:0.8rem; color:#aaa;"><i class="fa-solid fa-list"></i> ${data.pruebas_resumen}</div>` : '';
-                        pendingHTML += `
-                            <div class="compe-card">
-                                <div class="compe-header" style="border-bottom:none;">
-                                    <div class="status-badge status-pending">PENDIENTE</div>
-                                    <div class="compe-date">${fechaStr}</div>
-                                    <div class="compe-name">${data.nombre}</div>
-                                    <div class="compe-location"><i class="fa-solid fa-location-dot"></i> ${data.lugar}</div>
-                                    ${pruebas}
-                                </div>
-                            </div>`;
-                    }
-                });
-
-                pendingContainer.innerHTML = pendingHTML || '<p style="text-align:center; color:#888; padding:20px;">No hay competiciones pendientes.</p>';
-                finishedContainer.innerHTML = finishedHTML || '<p style="text-align:center; color:#888; padding:20px;">Aún no hay resultados.</p>';
-
-            } catch (error) {
-                console.error(error);
-                pendingContainer.innerHTML = '<p style="color:red; text-align:center;">Error al cargar calendario.</p>';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', loadCalendar);
-    </script>
 </body>
 </html>

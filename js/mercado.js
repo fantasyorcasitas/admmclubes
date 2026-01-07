@@ -27,7 +27,7 @@ async function cargarMercado() {
     }
 }
 
-// === 2. RENDERIZAR TARJETAS ===
+// === 2. RENDERIZAR TARJETAS (DISEÑO MEJORADO) ===
 function renderizarAtletas(listaAtletas) {
     if (listaAtletas.length === 0) {
         mercadoGrid.innerHTML = '<p style="text-align:center; color:gray">No hay resultados.</p>';
@@ -48,52 +48,70 @@ function renderizarAtletas(listaAtletas) {
         const fechaUltima = atleta.fecha_ultima_competicion || "-";
         const marcaUltima = atleta.marca_ultima_competicion || "-";
 
-        // CAMBIO SOLICITADO: Usar la prueba específica (ej: 400m) en vez de la categoría general
-        // Si no tiene prueba específica, usamos la categoría por defecto
+        // ETIQUETA PRUEBA (EJ: 400m)
         const etiquetaPrueba = atleta.pruebas_principales || atleta.categoria || 'ATLETA';
 
         htmlAcumulado += `
-            <div class="athlete-card">
-                <div class="athlete-header">
-                    <img src="${atleta.foto}" class="athlete-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/74/74472.png'">
-                    <div class="athlete-info">
-                        <h3>${atleta.nombre} ${atleta.apellidos || ''}</h3>
-                        <span class="badge-cat">${etiquetaPrueba}</span>
-                        <div class="price-tag">${precioDisplay}</div>
+            <div class="athlete-card" style="background: #111; border: 1px solid #333; border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden;">
+                
+                <div class="athlete-header" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <img src="${atleta.foto}" class="athlete-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/74/74472.png'" 
+                         style="width: 75px; height: 75px; border-radius: 50%; border: 3px solid #ff5e00; object-fit: cover; background: #000;">
+                    
+                    <div class="athlete-info" style="flex-grow: 1;">
+                        <h3 style="margin: 0; color: white; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px;">
+                            ${atleta.nombre} <span style="font-weight: 400;">${atleta.apellidos || ''}</span>
+                        </h3>
+                        
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+                            <span style="background: rgba(255, 94, 0, 0.15); color: #ff5e00; border: 1px solid rgba(255, 94, 0, 0.3); 
+                                         padding: 4px 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
+                                ${etiquetaPrueba}
+                            </span>
+                            
+                            <div style="color: #4cd137; font-size: 1.6rem; font-weight: 900; text-shadow: 0 0 10px rgba(76, 209, 55, 0.3);">
+                                ${precioDisplay}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="stats-summary" style="display:grid; grid-template-columns: 1fr 1fr; gap:1px; background:#333; border:1px solid #444;">
-                    <div class="stat-box" style="background:#0a0a0a;">
-                        <span class="stat-label" style="color:#ff5e00;">MMP (Marca)</span>
-                        <span class="stat-num" style="font-size:1.3rem;">${mmp}</span>
+                <div style="display: flex; background: linear-gradient(180deg, #1a1a1a 0%, #151515 100%); border-radius: 12px; padding: 15px 0; border: 1px solid #333;">
+                    
+                    <div style="flex: 1; text-align: center; border-right: 1px solid #333;">
+                        <span style="display: block; font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">
+                            <i class="fa-solid fa-bolt" style="color: #ff5e00;"></i> MMP (Marca)
+                        </span>
+                        <span style="font-size: 1.5rem; font-weight: 800; color: white;">
+                            ${mmp}
+                        </span>
                     </div>
-                    <div class="stat-box" style="background:#0a0a0a;">
-                        <span class="stat-label" style="color:#4cd137;">POS. ESPERADA</span>
-                        <span class="stat-num" style="font-size:1.3rem;">${posEsperada}º</span>
+
+                    <div style="flex: 1; text-align: center;">
+                        <span style="display: block; font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">
+                            <i class="fa-solid fa-ranking-star" style="color: #4cd137;"></i> Pos. Esp.
+                        </span>
+                        <span style="font-size: 1.5rem; font-weight: 800; color: white;">
+                            ${posEsperada}º
+                        </span>
                     </div>
                 </div>
 
-                <div class="toggle-btn" onclick="toggleHistorial('${atleta.id}')" style="margin-top:10px;">
+                <div class="toggle-btn" onclick="toggleHistorial('${atleta.id}')" 
+                     style="margin-top: 15px; text-align: center; color: #666; font-size: 0.8rem; cursor: pointer; transition: 0.3s;">
                     Ver última competición <i class="fa-solid fa-chevron-down"></i>
                 </div>
 
-                <div id="historial-${atleta.id}" class="historial-desplegable" style="display: none;">
+                <div id="historial-${atleta.id}" class="historial-desplegable" style="display: none; margin-top: 15px; border-top: 1px dashed #333; padding-top: 15px; animation: fadeIn 0.3s ease-out;">
                     
-                    <div style="background: #1a1a1a; padding: 15px; border-radius: 8px; margin-top:5px; border:1px solid #333;">
-                        <p style="color:#888; font-size:0.75rem; text-align:center; margin-bottom:10px; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #333; padding-bottom:5px;">
-                            <i class="fa-solid fa-flag-checkered"></i> Última Competición
-                        </p>
-                        
-                        <div style="display: flex; justify-content: space-between; text-align: center;">
-                            <div>
-                                <span style="display:block; font-size:0.7rem; color:#666;">FECHA</span>
-                                <strong style="color:white; font-size:1rem;">${fechaUltima}</strong>
-                            </div>
-                            <div>
-                                <span style="display:block; font-size:0.7rem; color:#666;">MARCA REALIZADA</span>
-                                <strong style="color:white; font-size:1rem;">${marcaUltima}</strong>
-                            </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 8px;">
+                        <div style="text-align: left;">
+                            <span style="font-size: 0.7rem; color: #888; text-transform: uppercase;">Fecha</span>
+                            <div style="color: white; font-weight: 600; margin-top: 2px;">${fechaUltima}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 0.7rem; color: #888; text-transform: uppercase;">Marca Realizada</span>
+                            <div style="color: #ff5e00; font-weight: 800; font-size: 1.1rem; margin-top: 2px;">${marcaUltima}</div>
                         </div>
                     </div>
 
@@ -105,17 +123,19 @@ function renderizarAtletas(listaAtletas) {
     mercadoGrid.innerHTML = htmlAcumulado;
 }
 
+// === 3. FUNCIONES AUXILIARES ===
 window.toggleHistorial = (id) => {
     const el = document.getElementById(`historial-${id}`);
     const btn = event.currentTarget; 
     
     if (el.style.display === "none") {
         el.style.display = "block";
-        el.style.animation = "fadeIn 0.3s ease-out";
         btn.innerHTML = 'Ocultar info <i class="fa-solid fa-chevron-up"></i>';
+        btn.style.color = "#ff5e00";
     } else {
         el.style.display = "none";
         btn.innerHTML = 'Ver última competición <i class="fa-solid fa-chevron-down"></i>';
+        btn.style.color = "#666";
     }
 };
 
@@ -125,4 +145,5 @@ inputBuscador.addEventListener('input', (e) => {
     renderizarAtletas(filtrados);
 });
 
+// Iniciar
 window.addEventListener('DOMContentLoaded', cargarMercado);

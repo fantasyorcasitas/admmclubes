@@ -250,6 +250,8 @@
     </script>
 
     <script type="module">
+        console.log("Iniciando script de clasificaciones..."); // Debug
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -270,12 +272,15 @@
 
         // FUNCIÓN PRINCIPAL DE CARGA
         async function cargarRanking(coleccion, idTabla) {
+            console.log(`Cargando colección: ${coleccion}`);
             const tbody = document.getElementById(idTabla);
-            if(!tbody) return;
+            if(!tbody) { console.error("No se encontró tabla " + idTabla); return; }
 
             try {
                 // Descargar datos
                 const snap = await getDocs(collection(db, coleccion));
+                console.log(`Datos recibidos de ${coleccion}: ${snap.size}`);
+                
                 let lista = [];
 
                 snap.forEach(doc => {
@@ -345,15 +350,13 @@
 
             } catch (e) {
                 console.error("Error cargando " + coleccion, e);
-                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#e84118;">Error de conexión.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#e84118;">Error de conexión: ${e.message}</td></tr>`;
             }
         }
 
         // EJECUTAR AL CARGAR
-        window.addEventListener('DOMContentLoaded', () => {
-            cargarRanking('usuarios', 'managersBody');
-            cargarRanking('atletas', 'atletasBody');
-        });
+        cargarRanking('usuarios', 'managersBody');
+        cargarRanking('atletas', 'atletasBody');
     </script>
 </body>
 </html>

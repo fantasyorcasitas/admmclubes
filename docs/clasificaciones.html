@@ -250,10 +250,10 @@
     </script>
 
     <script type="module">
-        console.log("Iniciando script de clasificaciones..."); // Debug
-
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // IMPORTAMOS AUTH PARA SOLUCIONAR EL ERROR DE PERMISOS
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // TU CONFIGURACIÓN
         const firebaseConfig = {
@@ -269,18 +269,16 @@
         // INICIAR FIREBASE
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
         // FUNCIÓN PRINCIPAL DE CARGA
         async function cargarRanking(coleccion, idTabla) {
-            console.log(`Cargando colección: ${coleccion}`);
             const tbody = document.getElementById(idTabla);
-            if(!tbody) { console.error("No se encontró tabla " + idTabla); return; }
+            if(!tbody) return;
 
             try {
                 // Descargar datos
                 const snap = await getDocs(collection(db, coleccion));
-                console.log(`Datos recibidos de ${coleccion}: ${snap.size}`);
-                
                 let lista = [];
 
                 snap.forEach(doc => {
@@ -354,9 +352,22 @@
             }
         }
 
-        // EJECUTAR AL CARGAR
-        cargarRanking('usuarios', 'managersBody');
-        cargarRanking('atletas', 'atletasBody');
+        // EJECUTAR SOLO SI HAY USUARIO AUTENTICADO (O ANÓNIMO)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Si ya estamos logueados, cargamos
+                console.log("Usuario autenticado, cargando datos...");
+                cargarRanking('usuarios', 'managersBody');
+                cargarRanking('atletas', 'atletasBody');
+            } else {
+                // Si NO estamos logueados, intentamos login anónimo para poder leer
+                console.log("No hay usuario, intentando login anónimo...");
+                signInAnonymously(auth).catch((error) => {
+                    console.error("Error login anónimo:", error);
+                    document.getElementById('managersBody').innerHTML = `<tr><td colspan="3" style="text-align:center; color:#e84118;">Error Auth: ${error.message}</td></tr>`;
+                });
+            }
+        });
     </script>
 </body>
 </html>

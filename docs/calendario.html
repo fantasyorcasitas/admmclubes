@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendario | Fantasy Orcasitas</title>
+    <title>Calendario</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -22,26 +22,51 @@
 
         /* FONDO */
         .bg-image {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('https://images.unsplash.com/photo-1587280501635-68a6e82cd7db?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover;
-            z-index: -2; opacity: 0.4;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://images.unsplash.com/photo-1532444458054-01a7dd3e9fca?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover;
+            z-index: -2;
+            transform: scale(1.05);
         }
+
         .bg-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), #000);
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
             z-index: -1;
+            backdrop-filter: blur(4px);
         }
 
         /* NAVBAR */
         .navbar {
+            position: sticky; top: 0;
             display: flex; justify-content: space-between; align-items: center;
-            background: #000; padding: 15px 20px; border-bottom: 2px solid #222;
-            position: sticky; top: 0; z-index: 100;
+            background-color: #000; border-bottom: 2px solid #222;
+            padding: 15px 20px; z-index: 1000; height: 70px; width: 100%;
         }
-        .nav-logo { font-weight: 800; font-size: 1.2rem; color: white; text-decoration: none; }
+
+        .nav-logo a {
+            text-decoration: none; color: white; font-size: 1.2rem; font-weight: 800;
+            display: flex; align-items: center; gap: 10px;
+        }
+
         .nav-logo span { color: #ff5e00; }
-        .nav-links a { color: #aaa; text-decoration: none; margin-left: 20px; font-weight: 600; font-size: 0.9rem; transition: 0.3s; }
+
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+
+        .nav-links a {
+            text-decoration: none; color: #aaa; font-weight: 600; font-size: 0.9rem; transition: 0.3s;
+        }
+
         .nav-links a:hover, .nav-links a.active { color: #ff5e00; }
+
+        .btn-logout {
+            background: none; border: none; color: #ff5e00; font-size: 1.2rem; cursor: pointer; margin-left: 10px;
+        }
+
+        .menu-toggle {
+            display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;
+        }
 
         /* CONTENEDOR PRINCIPAL */
         .container {
@@ -62,7 +87,7 @@
             background: rgba(20, 20, 20, 0.95);
             border: 1px solid #333;
             border-radius: 0 8px 8px 8px;
-            overflow-x: auto; /* Scroll horizontal en móvil */
+            overflow-x: auto;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
@@ -77,22 +102,33 @@
         tr:last-child td { border-bottom: none; }
         tr:hover { background: rgba(255, 94, 0, 0.05); }
 
-        /* CLASES DE COLUMNAS (Sincronizadas con HTML) */
+        /* CLASES DE COLUMNAS */
         .col-time { font-weight: bold; color: #ff5e00; font-family: monospace; font-size: 1rem; width: 90px; }
         .col-event { font-weight: 700; color: white; }
         .col-sex { text-align: center; font-weight: bold; width: 60px; }
-        .sex-m { color: #3498db; } /* Azul para M */
-        .sex-f { color: #e91e63; } /* Rosa para F */
+        .sex-m { color: #3498db; }
+        .sex-f { color: #e91e63; }
         .col-camara { color: #888; font-size: 0.85rem; font-family: monospace; }
         .col-serie { color: #ccc; font-size: 0.85rem; }
 
         /* RESPONSIVE */
         @media (max-width: 768px) {
-            .navbar { flex-direction: column; gap: 10px; }
-            .nav-links { margin-top: 10px; }
-            .nav-links a { margin: 0 10px; }
-            h1 { font-size: 1.4rem; }
-            .subtitle { font-size: 0.9rem; }
+            .navbar { padding: 10px 15px !important; }
+            .menu-toggle { display: block !important; }
+
+            .nav-links {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+                background-color: rgba(0,0,0,0.98);
+                flex-direction: column; justify-content: center; align-items: center;
+                z-index: 6000; transform: translateX(100%); transition: transform 0.3s ease-in-out;
+            }
+            .nav-links.active { transform: translateX(0); }
+            .nav-links a { font-size: 1.5rem; margin: 20px 0; color: white !important; display: block; }
+            .btn-logout { margin-top: 30px; font-size: 1.5rem; }
+
+            /* REJILLA A 1 COLUMNA (Heredado de tu css, aunque no se usa aquí el grid) */
+            .market-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 1.5rem; margin: 15px 0; }
         }
     </style>
 </head>
@@ -102,20 +138,36 @@
     <div class="bg-overlay"></div>
 
     <nav class="navbar">
-        <a href="home.html" class="nav-logo"><i class="fa-solid fa-person-running"></i> FANTASY <span>ORCASITAS</span></a>
-        <div class="nav-links">
+        <div class="nav-logo">
+            <a href="home.html">
+                <i class="fa-solid fa-person-running"></i> FANTASY <span>ATLETISMO</span>
+            </a>
+        </div>
+
+        <button class="menu-toggle" onclick="toggleMenu()">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="nav-links" id="navLinks">
+            <button class="menu-toggle" onclick="toggleMenu()" style="position: absolute; top: 20px; right: 20px; font-size: 2rem;">
+                <i class="fa-solid fa-times"></i>
+            </button>
+
             <a href="home.html">INICIO</a>
             <a href="mi_equipo.html">MI EQUIPO</a>
             <a href="mercado.html">MERCADO</a>
             <a href="clasificaciones.html">RANKING</a>
             <a href="calendario.html" class="active">CALENDARIO</a>
-            <a href="../index.html" onclick="localStorage.removeItem('fantasy_user')">SALIR</a>
+
+            <button onclick="cerrarSesion()" class="btn-logout">
+                <i class="fa-solid fa-power-off"></i> Salir
+            </button>
         </div>
     </nav>
 
     <div class="container">
         <h1><i class="fa-solid fa-calendar-days"></i> Horario Oficial</h1>
-        <div class="subtitle">CTO. MADRID CLUBES ABSOLUTO PC</div>
+        <div class="subtitle">CAMPEONATO DE MADRID DE CLUBES ABSOLUTO PC</div>
 
         <div class="schedule-section">
             <div class="section-title"><i class="fa-solid fa-stopwatch"></i> Carreras</div>
@@ -131,40 +183,40 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td class="col-time">16:00</td><td class="col-event">60m Vallas</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">15:50</td></tr>
-                        <tr><td class="col-time">16:05</td><td class="col-event">60m Vallas</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 2</td><td class="col-camara">15:55</td></tr>
-                        <tr><td class="col-time">16:10</td><td class="col-event">60m Vallas</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 1</td><td class="col-camara">16:00</td></tr>
-                        <tr><td class="col-time">16:15</td><td class="col-event">60m Vallas</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">16:05</td></tr>
+                        <tr><td class="col-time">16:00</td><td class="col-event">60m Vallas</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">15:55</td></tr>
+                        <tr><td class="col-time">16:05</td><td class="col-event">60m Vallas</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 2</td><td class="col-camara">16:00</td></tr>
+                        <tr><td class="col-time">16:10</td><td class="col-event">60m Vallas</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 1</td><td class="col-camara">16:05</td></tr>
+                        <tr><td class="col-time">16:15</td><td class="col-event">60m Vallas</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">16:10</td></tr>
                         
-                        <tr><td class="col-time">16:20</td><td class="col-event">60m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">16:10</td></tr>
-                        <tr><td class="col-time">16:25</td><td class="col-event">60m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 2</td><td class="col-camara">16:15</td></tr>
-                        <tr><td class="col-time">16:30</td><td class="col-event">60m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 1</td><td class="col-camara">16:20</td></tr>
-                        <tr><td class="col-time">16:35</td><td class="col-event">60m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">16:25</td></tr>
+                        <tr><td class="col-time">16:20</td><td class="col-event">60m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">16:15</td></tr>
+                        <tr><td class="col-time">16:25</td><td class="col-event">60m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 2</td><td class="col-camara">16:20</td></tr>
+                        <tr><td class="col-time">16:30</td><td class="col-event">60m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 1</td><td class="col-camara">16:25</td></tr>
+                        <tr><td class="col-time">16:35</td><td class="col-event">60m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">16:30</td></tr>
 
-                        <tr><td class="col-time">16:45</td><td class="col-event">400m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">16:35</td></tr>
-                        <tr><td class="col-time">16:49</td><td class="col-event">400m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 2</td><td class="col-camara">16:39</td></tr>
-                        <tr><td class="col-time">16:53</td><td class="col-event">400m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 1</td><td class="col-camara">16:43</td></tr>
-                        <tr><td class="col-time">16:57</td><td class="col-event">400m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">16:47</td></tr>
+                        <tr><td class="col-time">16:45</td><td class="col-event">400m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">16:40</td></tr>
+                        <tr><td class="col-time">16:49</td><td class="col-event">400m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 2</td><td class="col-camara">16:44</td></tr>
+                        <tr><td class="col-time">16:53</td><td class="col-event">400m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 1</td><td class="col-camara">16:48</td></tr>
+                        <tr><td class="col-time">16:57</td><td class="col-event">400m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">16:52</td></tr>
 
-                        <tr><td class="col-time">17:01</td><td class="col-event">200m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">16:51</td></tr>
-                        <tr><td class="col-time">17:05</td><td class="col-event">200m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 2</td><td class="col-camara">16:55</td></tr>
-                        <tr><td class="col-time">17:09</td><td class="col-event">200m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 1</td><td class="col-camara">16:59</td></tr>
-                        <tr><td class="col-time">17:13</td><td class="col-event">200m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">17:03</td></tr>
+                        <tr><td class="col-time">17:01</td><td class="col-event">200m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">16:56</td></tr>
+                        <tr><td class="col-time">17:05</td><td class="col-event">200m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 2</td><td class="col-camara">17:00</td></tr>
+                        <tr><td class="col-time">17:09</td><td class="col-event">200m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 1</td><td class="col-camara">17:04</td></tr>
+                        <tr><td class="col-time">17:13</td><td class="col-event">200m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">17:08</td></tr>
 
-                        <tr><td class="col-time">17:17</td><td class="col-event">800m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">17:07</td></tr>
-                        <tr><td class="col-time">17:22</td><td class="col-event">800m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 2</td><td class="col-camara">17:12</td></tr>
-                        <tr><td class="col-time">17:27</td><td class="col-event">800m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 1</td><td class="col-camara">17:17</td></tr>
-                        <tr><td class="col-time">17:32</td><td class="col-event">800m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">17:22</td></tr>
+                        <tr><td class="col-time">17:17</td><td class="col-event">800m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">17:12</td></tr>
+                        <tr><td class="col-time">17:22</td><td class="col-event">800m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 2</td><td class="col-camara">17:17</td></tr>
+                        <tr><td class="col-time">17:27</td><td class="col-event">800m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 1</td><td class="col-camara">17:22</td></tr>
+                        <tr><td class="col-time">17:32</td><td class="col-event">800m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">17:27</td></tr>
 
-                        <tr><td class="col-time">17:37</td><td class="col-event">1500m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Final</td><td class="col-camara">17:27</td></tr>
-                        <tr><td class="col-time">17:47</td><td class="col-event">1500m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Final</td><td class="col-camara">17:27</td></tr>
-                        <tr><td class="col-time">17:57</td><td class="col-event">3000m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Final</td><td class="col-camara">17:47</td></tr>
-                        <tr><td class="col-time">18:10</td><td class="col-event">3000m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Final</td><td class="col-camara">18:00</td></tr>
+                        <tr><td class="col-time">17:37</td><td class="col-event">1500m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">17:32</td></tr>
+                        <tr><td class="col-time">17:47</td><td class="col-event">1500m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">17:42</td></tr>
+                        <tr><td class="col-time">17:57</td><td class="col-event">3000m Lisos</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">17:52</td></tr>
+                        <tr><td class="col-time">18:10</td><td class="col-event">3000m Lisos</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">18:05</td></tr>
 
-                        <tr style="border-top: 2px solid #444;"><td class="col-time">18:25</td><td class="col-event">Relevo 4x400</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">18:15</td></tr>
-                        <tr><td class="col-time">18:30</td><td class="col-event">Relevo 4x400</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 2</td><td class="col-camara">18:20</td></tr>
-                        <tr><td class="col-time">18:35</td><td class="col-event">Relevo 4x400</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 1</td><td class="col-camara">18:25</td></tr>
-                        <tr><td class="col-time">18:40</td><td class="col-event">Relevo 4x400</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">18:30</td></tr>
+                        <tr style="border-top: 2px solid #444;"><td class="col-time">18:25</td><td class="col-event">Relevo 4x400</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 1</td><td class="col-camara">18:20</td></tr>
+                        <tr><td class="col-time">18:30</td><td class="col-event">Relevo 4x400</td><td class="col-sex sex-m">M</td><td class="col-serie">Serie 2</td><td class="col-camara">18:25</td></tr>
+                        <tr><td class="col-time">18:35</td><td class="col-event">Relevo 4x400</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 1</td><td class="col-camara">18:30</td></tr>
+                        <tr><td class="col-time">18:40</td><td class="col-event">Relevo 4x400</td><td class="col-sex sex-f">F</td><td class="col-serie">Serie 2</td><td class="col-camara">18:35</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -184,22 +236,35 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td class="col-time">15:00</td><td class="col-event">Pértiga</td><td class="col-sex sex-m">M</td><td class="col-camara">14:15</td><td class="col-camara">14:20</td></tr>
-                        <tr><td class="col-time">15:20</td><td class="col-event">Longitud</td><td class="col-sex sex-f">F</td><td class="col-camara">14:45</td><td class="col-camara">14:50</td></tr>
-                        <tr><td class="col-time">15:45</td><td class="col-event">Peso (4kg)</td><td class="col-sex sex-f">F</td><td class="col-camara">15:10</td><td class="col-camara">15:15</td></tr>
-                        <tr><td class="col-time">16:00</td><td class="col-event">Altura</td><td class="col-sex sex-m">M</td><td class="col-camara">15:25</td><td class="col-camara">15:30</td></tr>
-                        <tr><td class="col-time">16:25</td><td class="col-event">Longitud</td><td class="col-sex sex-m">M</td><td class="col-camara">15:50</td><td class="col-camara">15:55</td></tr>
-                        <tr><td class="col-time">16:45</td><td class="col-event">Peso (7.26kg)</td><td class="col-sex sex-m">M</td><td class="col-camara">16:10</td><td class="col-camara">16:15</td></tr>
-                        <tr><td class="col-time">17:30</td><td class="col-event">Altura</td><td class="col-sex sex-f">F</td><td class="col-camara">16:55</td><td class="col-camara">17:00</td></tr>
-                        <tr><td class="col-time">17:30</td><td class="col-event">Triple Salto</td><td class="col-sex sex-m">M</td><td class="col-camara">16:55</td><td class="col-camara">17:00</td></tr>
-                        <tr><td class="col-time">17:40</td><td class="col-event">Pértiga</td><td class="col-sex sex-f">F</td><td class="col-camara">16:55</td><td class="col-camara">17:00</td></tr>
-                        <tr><td class="col-time">18:40</td><td class="col-event">Triple Salto</td><td class="col-sex sex-f">F</td><td class="col-camara">18:05</td><td class="col-camara">18:10</td></tr>
+                        <tr><td class="col-time">15:00</td><td class="col-event">Pértiga</td><td class="col-sex sex-m">M</td><td class="col-camara">14:20</td><td class="col-camara">14:15</td></tr>
+                        <tr><td class="col-time">15:20</td><td class="col-event">Longitud</td><td class="col-sex sex-f">F</td><td class="col-camara">14:50</td><td class="col-camara">14:45</td></tr>
+                        <tr><td class="col-time">15:45</td><td class="col-event">Peso (4kg)</td><td class="col-sex sex-f">F</td><td class="col-camara">15:15</td><td class="col-camara">15:10</td></tr>
+                        <tr><td class="col-time">16:00</td><td class="col-event">Altura</td><td class="col-sex sex-m">M</td><td class="col-camara">15:30</td><td class="col-camara">15:25</td></tr>
+                        <tr><td class="col-time">16:25</td><td class="col-event">Longitud</td><td class="col-sex sex-m">M</td><td class="col-camara">15:55</td><td class="col-camara">15:50</td></tr>
+                        <tr><td class="col-time">16:45</td><td class="col-event">Peso (7.26kg)</td><td class="col-sex sex-m">M</td><td class="col-camara">16:15</td><td class="col-camara">16:10</td></tr>
+                        <tr><td class="col-time">17:30</td><td class="col-event">Altura</td><td class="col-sex sex-f">F</td><td class="col-camara">17:00</td><td class="col-camara">16:55</td></tr>
+                        <tr><td class="col-time">17:30</td><td class="col-event">Triple Salto</td><td class="col-sex sex-m">M</td><td class="col-camara">17:00</td><td class="col-camara">16:55</td></tr>
+                        <tr><td class="col-time">17:40</td><td class="col-event">Pértiga</td><td class="col-sex sex-f">F</td><td class="col-camara">17:00</td><td class="col-camara">16:55</td></tr>
+                        <tr><td class="col-time">18:40</td><td class="col-event">Triple Salto</td><td class="col-sex sex-f">F</td><td class="col-camara">18:10</td><td class="col-camara">18:05</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
     </div>
+
+    <script>
+        // Abrir/Cerrar menú móvil
+        function toggleMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+
+        // Logout
+        function cerrarSesion() {
+            localStorage.removeItem('fantasy_user');
+            window.location.href = '../index.html';
+        }
+    </script>
 
 </body>
 </html>

@@ -193,6 +193,7 @@
                 snapUsers.forEach(doc => {
                     const u = doc.data();
                     const nombre = u.nombre_usuario || "Usuario"; // Fallback por si no tiene nombre
+                    const equipo = u.nombre_equipo || "Sin Equipo";
                     const puntos = u.puntos_total || 0;
 
                     // Clases para colores top 3
